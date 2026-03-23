@@ -1,6 +1,7 @@
 import Groq from "groq-sdk";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// Use a dummy key during Vercel build phase if env var isn't set yet
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || "dummy_key_for_build" });
 
 const MODEL = "llama-3.3-70b-versatile";
 

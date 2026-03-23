@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getUserByUsername, getUserTweets } from "@/lib/twitter";
 import { extractUserSkills, extractFromManualInput } from "@/lib/groq";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
