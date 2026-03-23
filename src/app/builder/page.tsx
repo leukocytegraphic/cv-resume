@@ -3,9 +3,9 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BuilderState, UserAnalysis, CompanyAnalysis, CVData } from "@/types";
+import { BuilderState, UserAnalysis, CompanyAnalysis, ReviewData } from "@/types";
 
-const STEPS = ["You", "Target", "Role", "Preview"];
+const STEPS = ["You", "Target", "Role", "Review", "Preview"];
 
 const initialState: BuilderState = {
   step: 1,
@@ -18,6 +18,7 @@ const initialState: BuilderState = {
   useManualCompany: false,
   selectedRole: "",
   customRole: "",
+  reviewData: null,
   selectedTemplate: "modern",
   userAnalysis: null,
   companyAnalysis: null,
@@ -36,6 +37,7 @@ export default function BuilderPage() {
     setState(prev => ({ ...prev, ...patch, error: null }));
   }, []);
 
+  // ── Step 1: Analyze user ──────────────────────────────────────────────
   const analyzeUser = async () => {
     if (state.useXAuth && !state.twitterHandle) {
       update({ error: "Please enter your X handle to continue." });
@@ -54,8 +56,7 @@ export default function BuilderPage() {
       const res = await fetch("/api/analyze-user", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data: UserAnalysis = await res.json();
       if (!res.ok) throw new Error((data as any).error || "Analysis failed");
-      
-      // Ensure skills and domains arrays exist to prevent React crashes
+
       const safeData = {
         ...data,
         skills: Array.isArray(data.skills) ? data.skills : [],
@@ -86,7 +87,7 @@ export default function BuilderPage() {
       const res = await fetch("/api/analyze-company", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data: CompanyAnalysis = await res.json();
       if (!res.ok) throw new Error((data as any).error || "Analysis failed");
-      
+
       const safeData = {
         ...data,
         roles: Array.isArray(data.roles) ? data.roles : [],
@@ -94,41 +95,109 @@ export default function BuilderPage() {
         techStack: Array.isArray(data.techStack) ? data.techStack : [],
         keywords: Array.isArray(data.keywords) ? data.keywords : [],
       };
-      
+
       update({ companyAnalysis: safeData, analyzingCompany: false, step: 3 });
     } catch (e: any) {
       update({ analyzingCompany: false, error: e.message });
     }
   };
 
-  // ── Step 3: Generate CV ───────────────────────────────────────────────
-  const generateCV = async () => {
+  // ── Step 3 → Step 4: Go to Review ────────────────────────────────────
+  const goToReview = () => {
     const role = state.customRole || state.selectedRole;
     if (!role) { update({ error: "Please select or type a role." }); return; }
     if (!state.userAnalysis || !state.companyAnalysis) return;
+
+    // Pre-fill review with what we know from analysis
+    const prefilledReview: ReviewData = {
+      name: state.userAnalysis.displayName || state.twitterHandle || "",
+      title: role,
+      summary: state.userAnalysis.summary || "",
+      email: "",
+      phone: "",
+      location: "",
+      website: state.userAnalysis.twitterHandle ? `https://x.com/${state.userAnalysis.twitterHandle}` : "",
+      education: [{ degree: "", school: "", year: "" }],
+    };
+    update({ reviewData: prefilledReview, step: 4 });
+  };
+
+  // ── Review helpers ────────────────────────────────────────────────────
+  const updateReview = (patch: Partial<ReviewData>) => {
+    setState(prev => ({
+      ...prev,
+      reviewData: { ...(prev.reviewData as ReviewData), ...patch },
+      error: null,
+    }));
+  };
+
+  const updateEducation = (idx: number, field: string, value: string) => {
+    setState(prev => {
+      const edu = [...(prev.reviewData?.education || [])];
+      edu[idx] = { ...edu[idx], [field]: value };
+      return { ...prev, reviewData: { ...(prev.reviewData as ReviewData), education: edu } };
+    });
+  };
+
+  const addEducation = () => {
+    setState(prev => ({
+      ...prev,
+      reviewData: {
+        ...(prev.reviewData as ReviewData),
+        education: [...(prev.reviewData?.education || []), { degree: "", school: "", year: "" }],
+      },
+    }));
+  };
+
+  const removeEducation = (idx: number) => {
+    setState(prev => ({
+      ...prev,
+      reviewData: {
+        ...(prev.reviewData as ReviewData),
+        education: (prev.reviewData?.education || []).filter((_, i) => i !== idx),
+      },
+    }));
+  };
+
+  // ── Step 5: Generate CV ───────────────────────────────────────────────
+  const generateCV = async () => {
+    const role = state.customRole || state.selectedRole;
+    if (!state.userAnalysis || !state.companyAnalysis || !state.reviewData) return;
     update({ generatingCV: true });
     try {
       const res = await fetch("/api/generate-cv", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userAnalysis: state.userAnalysis, companyAnalysis: state.companyAnalysis, selectedRole: role }),
+        body: JSON.stringify({
+          userAnalysis: state.userAnalysis,
+          companyAnalysis: state.companyAnalysis,
+          selectedRole: role,
+          reviewData: state.reviewData,
+        }),
       });
-      const data: CVData = await res.json();
+      const data = await res.json();
       if (!res.ok) throw new Error((data as any).error || "Generation failed");
 
-      // Merge personalInfo with avatar/handle from analysis
+      // Merge personalInfo with user-confirmed review data
       const enriched = {
         ...data,
         personalInfo: {
-          ...(data as any).personalInfo,
+          ...(data.personalInfo || {}),
+          name: state.reviewData.name,
+          title: state.reviewData.title,
+          summary: state.reviewData.summary,
+          email: state.reviewData.email,
+          phone: state.reviewData.phone,
+          location: state.reviewData.location,
+          website: state.reviewData.website,
           twitterHandle: state.userAnalysis.twitterHandle,
           avatarUrl: state.userAnalysis.avatarUrl,
         },
+        education: state.reviewData.education.filter(e => e.degree || e.school),
         targetRole: role,
         targetCompany: state.companyAnalysis.companyName,
       };
 
-      // Store in sessionStorage and navigate
       sessionStorage.setItem("cvData", JSON.stringify(enriched));
       sessionStorage.setItem("cvTemplate", state.selectedTemplate);
       router.push("/result");
@@ -253,7 +322,6 @@ export default function BuilderPage() {
         {/* ── STEP 2: Target company ── */}
         {state.step === 2 && (
           <div className="step-panel">
-            {/* Analysis result summary */}
             {state.userAnalysis && (
               <div className="analysis-card success" style={{ marginBottom: 24 }}>
                 <div className="flex items-center gap-3" style={{ marginBottom: 12 }}>
@@ -386,6 +454,110 @@ export default function BuilderPage() {
 
               <div className="flex gap-3">
                 <button className="btn btn-ghost" onClick={() => update({ step: 2 })}>← Back</button>
+                <button
+                  id="go-to-review-btn"
+                  className="btn btn-primary"
+                  style={{ flex: 1, padding: "14px" }}
+                  onClick={goToReview}
+                >
+                  Review my details →
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── STEP 4: Review & Edit ── */}
+        {state.step === 4 && state.reviewData && (
+          <div className="step-panel">
+            <div className="card" style={{ padding: 32 }}>
+              <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 6 }}>Review your details</h2>
+              <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 28 }}>
+                Confirm and correct any information before we generate your CV. Fields marked <span style={{ color: "var(--accent)" }}>*</span> will appear on your CV.
+              </p>
+
+              <div style={{ display: "grid", gap: 16 }}>
+                {/* Name & Title */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 6, color: "var(--text-secondary)" }}>
+                      Full name <span style={{ color: "var(--accent)" }}>*</span>
+                    </label>
+                    <input className="input" placeholder="Your full name" value={state.reviewData.name} onChange={e => updateReview({ name: e.target.value })} />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 6, color: "var(--text-secondary)" }}>
+                      Job title <span style={{ color: "var(--accent)" }}>*</span>
+                    </label>
+                    <input className="input" placeholder="e.g. Frontend Developer" value={state.reviewData.title} onChange={e => updateReview({ title: e.target.value })} />
+                  </div>
+                </div>
+
+                {/* Contact Info */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 6, color: "var(--text-secondary)" }}>
+                      Email <span style={{ color: "var(--accent)" }}>*</span>
+                    </label>
+                    <input className="input" type="email" placeholder="you@email.com" value={state.reviewData.email} onChange={e => updateReview({ email: e.target.value })} />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 6, color: "var(--text-secondary)" }}>
+                      Phone <span style={{ color: "var(--text-muted)" }}>(optional)</span>
+                    </label>
+                    <input className="input" placeholder="+1 234 567 8900" value={state.reviewData.phone} onChange={e => updateReview({ phone: e.target.value })} />
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 6, color: "var(--text-secondary)" }}>
+                      Location <span style={{ color: "var(--text-muted)" }}>(optional)</span>
+                    </label>
+                    <input className="input" placeholder="e.g. Lagos, Nigeria" value={state.reviewData.location} onChange={e => updateReview({ location: e.target.value })} />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 6, color: "var(--text-secondary)" }}>
+                      Website / X link <span style={{ color: "var(--text-muted)" }}>(optional)</span>
+                    </label>
+                    <input className="input" placeholder="https://x.com/yourhandle" value={state.reviewData.website} onChange={e => updateReview({ website: e.target.value })} />
+                  </div>
+                </div>
+
+                {/* Summary */}
+                <div>
+                  <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 6, color: "var(--text-secondary)" }}>
+                    Professional summary <span style={{ color: "var(--accent)" }}>*</span>
+                  </label>
+                  <textarea className="input" rows={4} placeholder="A short blurb about who you are and what you bring to the table..." value={state.reviewData.summary} onChange={e => updateReview({ summary: e.target.value })} />
+                </div>
+
+                {/* Education */}
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                    <label style={{ fontSize: 13, fontWeight: 600, color: "var(--text-secondary)" }}>Education</label>
+                    <button className="btn btn-ghost" style={{ fontSize: 12, padding: "4px 12px" }} onClick={addEducation}>+ Add</button>
+                  </div>
+                  {state.reviewData.education.map((edu, idx) => (
+                    <div key={idx} style={{ display: "grid", gridTemplateColumns: "1fr 1fr auto", gap: 10, marginBottom: 10, alignItems: "end" }}>
+                      <input className="input" placeholder="Degree / Certificate" value={edu.degree} onChange={e => updateEducation(idx, "degree", e.target.value)} />
+                      <input className="input" placeholder="School / University" value={edu.school} onChange={e => updateEducation(idx, "school", e.target.value)} />
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <input className="input" placeholder="Year" style={{ width: 80 }} value={edu.year} onChange={e => updateEducation(idx, "year", e.target.value)} />
+                        {state.reviewData!.education.length > 1 && (
+                          <button className="btn btn-ghost" style={{ padding: "8px 10px", color: "var(--accent)" }} onClick={() => removeEducation(idx)}>✕</button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  <p style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+                    Leave blank to skip education section on your CV.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3" style={{ marginTop: 32 }}>
+                <button className="btn btn-ghost" onClick={() => update({ step: 3 })}>← Back</button>
                 <button
                   id="generate-cv-btn"
                   className="btn btn-primary"

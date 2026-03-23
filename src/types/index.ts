@@ -66,6 +66,17 @@ export interface CVData {
 
 export type CVTemplate = "modern" | "professional" | "minimal";
 
+export interface ReviewData {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  website: string;
+  title: string;
+  summary: string;
+  education: { degree: string; school: string; year: string }[];
+}
+
 export interface BuilderState {
   step: number;
   // Step 1
@@ -80,7 +91,9 @@ export interface BuilderState {
   // Step 3
   selectedRole: string;
   customRole: string;
-  // Step 4
+  // Step 4 - Review & Edit
+  reviewData: ReviewData | null;
+  // Step 5
   selectedTemplate: CVTemplate;
   // Analysis results
   userAnalysis: UserAnalysis | null;
@@ -92,3 +105,4 @@ export interface BuilderState {
   generatingCV: boolean;
   error: string | null;
 }
+
