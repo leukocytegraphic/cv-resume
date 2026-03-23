@@ -122,65 +122,79 @@ export async function generateCVData(params: {
     keywords: string[];
   };
   selectedRole: string;
+  reviewData?: {
+    name: string;
+    title: string;
+    summary: string;
+    email: string;
+    phone: string;
+    location: string;
+    website: string;
+    education: { degree: string; school: string; year: string }[];
+  };
 }): Promise<object> {
-  const { userAnalysis, companyAnalysis, selectedRole } = params;
+  const { userAnalysis, companyAnalysis, selectedRole, reviewData } = params;
 
   const completion = await groq.chat.completions.create({
     model: MODEL,
     messages: [
       {
         role: "system",
-        content: `You are a professional CV writer. Create tailored, compelling CV content that matches a candidate's skills to a specific job. Write in a confident, professional tone. Always respond with valid JSON only.`,
+        content: `You are a senior professional CV/resume writer and ATS specialist.
+Your job is to write polished, REALISTIC CV content that passes Applicant Tracking Systems.
+STRICT RULES:
+1. NEVER invent fake companies, fake job titles, or fake degrees. Leave experience[] and education[] as empty arrays [].
+2. DO write powerful, ATS-optimized skills, highlights, and a personal summary.
+3. Each highlight must follow the CAR format: Context → Action → Result.
+4. Use strong action verbs: Led, Architected, Delivered, Optimized, Drove, Scaled, Built, Shipped.
+5. Quantify results where possible (e.g. "reduced load time by 40%", "grew audience by 3k in 6 months").
+6. Highlights should sound like real freelance, portfolio, or open-source achievements — not fake employment.
+7. Always respond with valid JSON only.`,
       },
       {
         role: "user",
-        content: `Create a professional CV for this candidate applying for a role.
+        content: `Write ATS-optimized CV content for this candidate.
 
 CANDIDATE:
-Name: ${userAnalysis.displayName}
-Twitter: @${userAnalysis.twitterHandle}
+Name: ${reviewData?.name || userAnalysis.displayName}
+Target Role: ${selectedRole} at ${companyAnalysis.companyName}
+Experience Level: ${userAnalysis.experienceLevel}
 Skills: ${userAnalysis.skills.join(", ")}
 Domains: ${userAnalysis.domains.join(", ")}
-Summary: ${userAnalysis.summary}
 Strengths: ${userAnalysis.strengths.join(", ")}
-Experience Level: ${userAnalysis.experienceLevel}
+Background Summary: ${reviewData?.summary || userAnalysis.summary}
 
-TARGET ROLE: ${selectedRole} at ${companyAnalysis.companyName}
-Company Requirements: ${companyAnalysis.requirements.join(", ")}
-Company Tech Stack: ${companyAnalysis.techStack.join(", ")}
-Company Culture: ${companyAnalysis.culture}
-Keywords to naturally incorporate: ${companyAnalysis.keywords.join(", ")}
+TARGET COMPANY:
+Company: ${companyAnalysis.companyName}
+Requirements: ${companyAnalysis.requirements.join(", ")}
+Tech Stack: ${companyAnalysis.techStack.join(", ")}
+Culture: ${companyAnalysis.culture}
+ATS Keywords: ${companyAnalysis.keywords.join(", ")}
 
-Return a JSON object with exactly these fields:
+Return a JSON object with EXACTLY these fields:
 {
   "personalInfo": {
-    "name": "${userAnalysis.displayName}",
-    "title": "Professional title for this application",
+    "name": "${reviewData?.name || userAnalysis.displayName}",
+    "title": "${selectedRole}",
     "twitterHandle": "${userAnalysis.twitterHandle}",
-    "summary": "3-4 sentences tailored professional summary highlighting fit for this role"
+    "summary": "3-4 sentence ATS-optimized professional summary. Open with experience level and domain. Use 2-3 keywords from the job. Close with value proposition for this specific company."
   },
-  "skills": ["top 10 most relevant skills, prioritizing match with company needs"],
+  "skills": ["top 10 most relevant skills ordered by relevance to the job — exact skill names, no generic fluff"],
   "highlights": [
-    { "title": "Achievement/Project Title", "description": "One powerful sentence about impact" }
-  ],
-  "experience": [
     {
-      "title": "Job Title",
-      "company": "Company/Project Name",
-      "period": "Year - Year or Present",
-      "bullets": ["2-3 impact-focused bullet points"]
+      "title": "Achievement title using a strong action verb",
+      "description": "One powerful sentence: Context + Action + measurable Result. Reference a realistic project or freelance scenario. No invented company names."
     }
   ],
-  "education": [
-    { "degree": "Degree or Certification", "school": "Institution", "year": "Year" }
-  ],
-  "keywords": ["important ATS keywords for this role"]
+  "experience": [],
+  "education": [],
+  "keywords": ["10-15 ATS keywords and phrases that an automated hiring system will scan for — match the job description language exactly"]
 }
 
-Note: For experience and education, create realistic but clearly labeled fictional entries based on the candidate's skills and domains since we don't have their actual history. Make 2-3 experience entries and 1-2 education entries.`,
+Generate exactly 3 highlights. They must be specific and believable — freelance, portfolio, open-source, or self-directed projects matching the candidate's skill domains.`,
       },
     ],
-    temperature: 0.5,
+    temperature: 0.4,
     max_tokens: 2000,
   });
 
