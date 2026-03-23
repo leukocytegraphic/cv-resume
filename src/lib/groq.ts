@@ -143,12 +143,12 @@ export async function generateCVData(params: {
         content: `You are a senior professional CV/resume writer and ATS specialist.
 Your job is to write polished, REALISTIC CV content that passes Applicant Tracking Systems.
 STRICT RULES:
-1. NEVER invent fake companies, fake job titles, or fake degrees. Leave experience[] and education[] as empty arrays [].
-2. DO write powerful, ATS-optimized skills, highlights, and a personal summary.
-3. Each highlight must follow the CAR format: Context → Action → Result.
-4. Use strong action verbs: Led, Architected, Delivered, Optimized, Drove, Scaled, Built, Shipped.
-5. Quantify results where possible (e.g. "reduced load time by 40%", "grew audience by 3k in 6 months").
-6. Highlights should sound like real freelance, portfolio, or open-source achievements — not fake employment.
+1. You MUST generate 2-3 professional work experiences by logically inferring from the candidate's X (Twitter) profile data. Analyze the companies, projects, or protocols they mention (e.g., LayerEdge, OpenLedger, etc.) and create a smart, professional experience entry for each.
+2. Formulate realistic job titles based on their skills (e.g., "Web3 Developer", "Developer Advocate", "Growth Strategist"). Do NOT just invent randomly; ground it in their domains and X profile context.
+3. DO write powerful, ATS-optimized bullets under each experience using the CAR format: Context → Action → Result.
+4. Use strong action verbs: Architected, Delivered, Optimized, Developed, Scaled, Built, Led.
+5. Quantify results logically where possible to simulate a real CV (e.g. "improved metrics by X%", "managed scope of Y").
+6. Leave education[] as an empty array [] unless provided in the prompt.
 7. Always respond with valid JSON only.`,
       },
       {
@@ -183,15 +183,25 @@ Return a JSON object with EXACTLY these fields:
   "highlights": [
     {
       "title": "Achievement title using a strong action verb",
-      "description": "One powerful sentence: Context + Action + measurable Result. Reference a realistic project or freelance scenario. No invented company names."
+      "description": "One powerful sentence: Context + Action + measurable Result. Reference a realistic project or freelance scenario."
     }
   ],
-  "experience": [],
+  "experience": [
+    {
+      "title": "Professional Job Title (e.g. Senior Frontend Engineer)",
+      "company": "Company Inferred from X (e.g., LayerEdge)",
+      "period": "2023 - Present",
+      "bullets": [
+        "Spearheaded development of X using Y...",
+        "..."
+      ]
+    }
+  ],
   "education": [],
   "keywords": ["10-15 ATS keywords and phrases that an automated hiring system will scan for — match the job description language exactly"]
 }
 
-Generate exactly 3 highlights. They must be specific and believable — freelance, portfolio, open-source, or self-directed projects matching the candidate's skill domains.`,
+Generate exactly 3 highlights and exactly 2-3 logical work experiences using context from their profile domains and strengths.`,
       },
     ],
     temperature: 0.4,

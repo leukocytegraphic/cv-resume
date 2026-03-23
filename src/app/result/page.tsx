@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CVData, CVTemplate } from "@/types";
 
-const WALLET = "0xc428758C4d07cc64A879601b0578182872997Cc9";
+const WALLET = "0x1c1f06de52D8Ed77ec11B167DAE588A598103D2b";
 
 /* ── Watermark (subtle bottom-corner) ─────────────────────────────────── */
 function Watermark() {

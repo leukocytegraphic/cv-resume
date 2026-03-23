@@ -995,27 +995,6 @@ textarea.input {
 }
 
 /* ============================================
-   RESPONSIVE
-   ============================================ */
-@media (max-width: 768px) {
-  .features-grid { grid-template-columns: 1fr; }
-  .cv-modern-body { grid-template-columns: 1fr; }
-  .result-toolbar { flex-direction: column; gap: 12px; }
-  .hero-title { font-size: 36px; }
-  .cv-modern, .cv-professional, .cv-minimal { margin: 16px; border-radius: var(--radius-lg); }
-  .cv-professional-header, .cv-professional-body { padding: 28px; }
-  .cv-minimal { padding: 32px; }
-  .steps-grid { grid-template-columns: 1fr 1fr; }
-  .footer-inner { flex-direction: column; gap: 12px; text-align: center; }
-  .nav-links { display: none; }
-}
-
-@media (max-width: 480px) {
-  .steps-grid { grid-template-columns: 1fr; }
-  .stats-strip { grid-template-columns: 1fr 1fr; }
-}
-
-/* ============================================
    LANDING REDESIGN ADDITIONS
    ============================================ */
 
@@ -1269,4 +1248,32 @@ textarea.input {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+  .features-grid { grid-template-columns: 1fr; }
+  .cv-modern-body { grid-template-columns: 1fr; }
+  .result-toolbar { flex-direction: column; gap: 12px; }
+  .hero-title { font-size: 36px; }
+  .cv-modern, .cv-professional, .cv-minimal { margin: 16px; border-radius: var(--radius-lg); }
+  .cv-professional-header, .cv-professional-body { padding: 28px; }
+  .cv-minimal { padding: 32px; }
+  .steps-grid { grid-template-columns: 1fr 1fr; gap: 24px; }
+  .footer-inner { flex-direction: column; gap: 12px; text-align: center; }
+  .nav-links { display: none; }
+  
+  /* Additional landing page mobile fixes */
+  .stats-strip {
+    grid-template-columns: 1fr 1fr;
+    border-radius: var(--radius-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .steps-grid { grid-template-columns: 1fr; }
+  .stats-strip { grid-template-columns: 1fr; }
+  .cta-card { padding: 48px 24px; }
 }
