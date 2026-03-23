@@ -36,22 +36,32 @@ export default function BuilderPage() {
     setState(prev => ({ ...prev, ...patch, error: null }));
   }, []);
 
-  // ── Step 1: Analyze user ──────────────────────────────────────────────
   const analyzeUser = async () => {
-    if (!state.useXAuth && !state.twitterHandle && !state.manualSkills) {
-      update({ error: "Please enter your X handle or your skills to continue." });
+    if (state.useXAuth && !state.twitterHandle) {
+      update({ error: "Please enter your X handle to continue." });
+      return;
+    }
+    if (!state.useXAuth && !state.manualSkills) {
+      update({ error: "Please enter your skills to continue." });
       return;
     }
     update({ analyzingUser: true });
     try {
-      const body = state.manualSkills
+      const body = !state.useXAuth
         ? { manual: true, skills: state.manualSkills, areas: state.manualAreas, displayName: state.twitterHandle || "You", handle: state.twitterHandle }
         : { handle: state.twitterHandle };
 
       const res = await fetch("/api/analyze-user", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data: UserAnalysis = await res.json();
       if (!res.ok) throw new Error((data as any).error || "Analysis failed");
-      update({ userAnalysis: data, analyzingUser: false, step: 2 });
+      
+      // Ensure skills and domains arrays exist to prevent React crashes
+      const safeData = {
+        ...data,
+        skills: Array.isArray(data.skills) ? data.skills : [],
+        domains: Array.isArray(data.domains) ? data.domains : [],
+      };
+      update({ userAnalysis: safeData, analyzingUser: false, step: 2 });
     } catch (e: any) {
       update({ analyzingUser: false, error: e.message });
     }
@@ -76,7 +86,16 @@ export default function BuilderPage() {
       const res = await fetch("/api/analyze-company", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const data: CompanyAnalysis = await res.json();
       if (!res.ok) throw new Error((data as any).error || "Analysis failed");
-      update({ companyAnalysis: data, analyzingCompany: false, step: 3 });
+      
+      const safeData = {
+        ...data,
+        roles: Array.isArray(data.roles) ? data.roles : [],
+        requirements: Array.isArray(data.requirements) ? data.requirements : [],
+        techStack: Array.isArray(data.techStack) ? data.techStack : [],
+        keywords: Array.isArray(data.keywords) ? data.keywords : [],
+      };
+      
+      update({ companyAnalysis: safeData, analyzingCompany: false, step: 3 });
     } catch (e: any) {
       update({ analyzingCompany: false, error: e.message });
     }
@@ -164,53 +183,55 @@ export default function BuilderPage() {
 
               {/* Toggle */}
               <div className="option-toggle" style={{ marginBottom: 24 }}>
-                <button className={`option-toggle-btn ${!state.manualSkills ? "active" : ""}`} onClick={() => update({ manualSkills: "", manualAreas: "" })}>
+                <button className={`option-toggle-btn ${state.useXAuth ? "active" : ""}`} onClick={() => update({ useXAuth: true, error: null })}>
                   𝕏 X Profile
                 </button>
-                <button className={`option-toggle-btn ${state.manualSkills !== undefined && state.useXAuth === false ? "" : ""}`}
-                  onClick={() => update({ twitterHandle: "", useXAuth: false })}>
+                <button className={`option-toggle-btn ${!state.useXAuth ? "active" : ""}`}
+                  onClick={() => update({ useXAuth: false, error: null })}>
                   ✏️ Manual
                 </button>
               </div>
 
-              {/* X Handle input (always useful for display name) */}
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 8, color: "var(--text-secondary)" }}>
-                  Your X handle <span style={{ color: "var(--text-muted)" }}>(e.g. @elonmusk)</span>
+                  {state.useXAuth ? "Your X handle" : "Your name or handle"} <span style={{ color: "var(--text-muted)" }}>{state.useXAuth ? "(e.g. @elonmusk)" : ""}</span>
                 </label>
                 <input
                   className="input"
-                  placeholder="@yourhandle"
+                  placeholder={state.useXAuth ? "@yourhandle" : "e.g. John Doe"}
                   value={state.twitterHandle}
-                  onChange={e => update({ twitterHandle: e.target.value.trim() })}
+                  onChange={e => update({ twitterHandle: e.target.value })}
                 />
               </div>
 
-              {/* Manual fields (optional override) */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 8, color: "var(--text-secondary)" }}>
-                  Your skills <span style={{ color: "var(--text-muted)" }}>(optional — leave blank to scan X)</span>
-                </label>
-                <textarea
-                  className="input"
-                  placeholder="e.g. React, TypeScript, smart contract development, technical writing, DeFi..."
-                  value={state.manualSkills}
-                  onChange={e => update({ manualSkills: e.target.value })}
-                  rows={3}
-                />
-              </div>
+              {!state.useXAuth && (
+                <>
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 8, color: "var(--text-secondary)" }}>
+                      Your skills
+                    </label>
+                    <textarea
+                      className="input"
+                      placeholder="e.g. React, TypeScript, smart contract development, technical writing, DeFi..."
+                      value={state.manualSkills}
+                      onChange={e => update({ manualSkills: e.target.value })}
+                      rows={3}
+                    />
+                  </div>
 
-              <div style={{ marginBottom: 28 }}>
-                <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 8, color: "var(--text-secondary)" }}>
-                  Your professional areas <span style={{ color: "var(--text-muted)" }}>(optional)</span>
-                </label>
-                <input
-                  className="input"
-                  placeholder="e.g. Web3, frontend development, protocol design..."
-                  value={state.manualAreas}
-                  onChange={e => update({ manualAreas: e.target.value })}
-                />
-              </div>
+                  <div style={{ marginBottom: 28 }}>
+                    <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 8, color: "var(--text-secondary)" }}>
+                      Your professional areas <span style={{ color: "var(--text-muted)" }}>(optional)</span>
+                    </label>
+                    <input
+                      className="input"
+                      placeholder="e.g. Web3, frontend development, protocol design..."
+                      value={state.manualAreas}
+                      onChange={e => update({ manualAreas: e.target.value })}
+                    />
+                  </div>
+                </>
+              )}
 
               <button
                 id="analyze-user-btn"

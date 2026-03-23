@@ -157,7 +157,7 @@ export default function Home() {
       <footer style={{ borderTop: "1px solid var(--border)", padding: "24px 0", textAlign: "center" }}>
         <div className="container">
           <p style={{ color: "var(--text-muted)", fontSize: 13 }}>
-            CVBuilder · Built with Groq AI · Powered by X API · 100% Free
+            Built by <a href="https://x.com/leukocyteng1" target="_blank" rel="noopener noreferrer" style={{ color: "var(--accent-light)", textDecoration: "none" }}>Leukocyte</a> || All Rights Reserved {new Date().getFullYear()}
           </p>
         </div>
       </footer>
