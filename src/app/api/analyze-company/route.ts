@@ -52,10 +52,10 @@ export async function POST(req: NextRequest) {
       ...analysis,
       companyName: user.name,
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error("/api/analyze-company error:", err);
     return NextResponse.json(
-      { error: "Failed to analyze company. Please use manual input." },
+      { error: err.message || "Failed to analyze company. Check your API keys and try again." },
       { status: 500 }
     );
   }

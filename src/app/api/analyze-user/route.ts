@@ -60,10 +60,10 @@ export async function POST(req: NextRequest) {
       displayName: user.name,
       avatarUrl: user.profile_image_url?.replace("_normal", "_400x400"),
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error("/api/analyze-user error:", err);
     return NextResponse.json(
-      { error: "Failed to analyze user. Please try manual input." },
+      { error: err.message || "Failed to analyze user. Check your API keys and try again." },
       { status: 500 }
     );
   }

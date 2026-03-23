@@ -42,10 +42,10 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json(cvData);
-  } catch (err) {
+  } catch (err: any) {
     console.error("/api/generate-cv error:", err);
     return NextResponse.json(
-      { error: "Failed to generate CV. Please try again." },
+      { error: err.message || "Failed to generate CV. Check your API keys and try again." },
       { status: 500 }
     );
   }
