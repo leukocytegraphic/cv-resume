@@ -143,13 +143,14 @@ export async function generateCVData(params: {
         content: `You are a senior professional CV/resume writer and ATS specialist.
 Your job is to write polished, REALISTIC CV content that passes Applicant Tracking Systems.
 STRICT RULES:
-1. You MUST generate 2-3 professional work experiences by logically inferring from the candidate's X (Twitter) profile data. Analyze the companies, projects, or protocols they mention (e.g., LayerEdge, OpenLedger, etc.) and create a smart, professional experience entry for each.
-2. Formulate realistic job titles based on their skills (e.g., "Web3 Developer", "Developer Advocate", "Growth Strategist"). Do NOT just invent randomly; ground it in their domains and X profile context.
-3. DO write powerful, ATS-optimized bullets under each experience using the CAR format: Context → Action → Result.
-4. Use strong action verbs: Architected, Delivered, Optimized, Developed, Scaled, Built, Led.
-5. Quantify results logically where possible to simulate a real CV (e.g. "improved metrics by X%", "managed scope of Y").
-6. Leave education[] as an empty array [] unless provided in the prompt.
-7. Always respond with valid JSON only.`,
+1. You MUST generate 2-3 professional work experiences by logically inferring from the candidate's X (Twitter) profile data. Analyze the companies, projects, or protocols they explicitly mention working for or collaborating with.
+2. IMPORTANT: If you cannot confidently identify a specific company they worked for based strictly on their profile, use "Freelance", "Independent Consultant", or "Self-Employed" as the company name. NEVER hallucinate or invent fake company names.
+3. Formulate realistic job titles based on their skills (e.g., "Web3 Developer", "Developer Advocate", "Growth Strategist"). Ground the titles in their actual domains.
+4. DO write powerful, ATS-optimized bullets under each experience using the CAR format: Context → Action → Result.
+5. Use strong action verbs: Architected, Delivered, Optimized, Developed, Scaled, Built, Led.
+6. Quantify results logically where possible to simulate a real CV (e.g. "improved metrics by X%", "managed scope of Y").
+7. Leave education[] as an empty array [] unless provided in the prompt.
+8. Always respond with valid JSON only.`,
       },
       {
         role: "user",
@@ -189,7 +190,7 @@ Return a JSON object with EXACTLY these fields:
   "experience": [
     {
       "title": "Professional Job Title (e.g. Senior Frontend Engineer)",
-      "company": "Company Inferred from X (e.g., LayerEdge)",
+      "company": "Company inferred from X profile, OR 'Freelance' if unknown",
       "period": "2023 - Present",
       "bullets": [
         "Spearheaded development of X using Y...",
