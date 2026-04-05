@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
-import { Twitter, MapPin, Mail, Phone, Link as LinkIcon, Download, Sparkles, RefreshCw, Lock, Coins, Check, ArrowLeft, AlertCircle, X } from "lucide-react";
+import { Twitter, MapPin, Mail, Phone, Link as LinkIcon, Download, Sparkles, RefreshCw, Lock, Coins, Check, ArrowLeft, AlertCircle, X, LayoutDashboard, Plus, CheckCircle2 } from "lucide-react";
 import { CVData, CVTemplate } from "@/types";
 import { BuyCreditsModal } from "@/components/BuyCreditsModal";
 
@@ -270,16 +270,30 @@ export default function ResultPage() {
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const stored = sessionStorage.getItem("cvData");
-    const storedTemplate = sessionStorage.getItem("cvTemplate") as CVTemplate;
+    const data = sessionStorage.getItem("cvData");
+    const tpl = sessionStorage.getItem("cvTemplate");
     const isUnlocked = sessionStorage.getItem("cvUnlocked") === "true";
-    if (!stored) { router.push("/builder"); return; }
-    setCv(JSON.parse(stored));
-    if (storedTemplate) setTemplate(storedTemplate);
+    if (data) setCv(JSON.parse(data));
+    if (tpl) setTemplate(tpl as CVTemplate);
     if (isUnlocked) setUnlocked(true);
 
-    fetchCredits();
-  }, [router]);
+    if (authStatus === "authenticated") {
+      fetchCredits();
+      
+      const pending = sessionStorage.getItem("pendingUnlock");
+      if (pending === "true" && !isUnlocked) {
+        sessionStorage.removeItem("pendingUnlock");
+        handleUnlock();
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("payment") === "completed") {
+         setUnlocked(true);
+         sessionStorage.setItem("cvUnlocked", "true");
+         router.replace(window.location.pathname);
+      }
+    }
+  }, [authStatus, router]);
 
   const fetchCredits = async () => {
     try {
@@ -288,7 +302,6 @@ export default function ResultPage() {
         const data = await res.json();
         setCredits(data.credits);
       } else {
-        // Fallback for UI if totally local/no db
         setCredits(10);
       }
     } catch {
@@ -298,7 +311,8 @@ export default function ResultPage() {
 
   const handleUnlock = async () => {
     if (authStatus === "unauthenticated") {
-      signIn("twitter");
+      sessionStorage.setItem("pendingUnlock", "true");
+      signIn("twitter", { callbackUrl: window.location.href });
       return;
     }
 
@@ -308,10 +322,8 @@ export default function ResultPage() {
     }
     setUnlocking(true);
     try {
-      // Simulate deducting API
       const res = await fetch("/api/credits/deduct", { method: "POST" });
       if (!res.ok) {
-        // Fallback simulation
         if (credits !== null) setCredits(credits - 5);
       } else {
         await fetchCredits();
@@ -402,10 +414,18 @@ export default function ResultPage() {
             </div>
 
             {unlocked ? (
-              <button id="download-clean-btn" className="btn btn-primary flex items-center gap-2" onClick={handlePrint} disabled={printing}>
-                {printing ? <RefreshCw size={16} className="spinner" /> : <Download size={16} />} 
-                {printing ? "Preparing…" : "Download PDF"}
-              </button>
+              <div className="flex items-center gap-3">
+                <button id="download-clean-btn" className="btn btn-primary flex items-center gap-2" onClick={handlePrint} disabled={printing}>
+                  {printing ? <RefreshCw size={16} className="spinner" /> : <Download size={16} />} 
+                  {printing ? "Preparing…" : "Download PDF"}
+                </button>
+                <Link href="/dashboard" className="btn btn-ghost btn-sm flex items-center gap-2">
+                   <LayoutDashboard size={14} /> Dashboard
+                </Link>
+                <Link href="/builder" className="btn btn-ghost btn-sm flex items-center gap-2" onClick={() => sessionStorage.removeItem("cvData")}>
+                   <Plus size={14} /> New CV
+                </Link>
+              </div>
             ) : (
               <button className="btn btn-primary flex items-center gap-2" onClick={handleUnlock} disabled={unlocking}>
                 {unlocking ? <RefreshCw size={16} className="spinner" /> : (authStatus === "unauthenticated" ? <Twitter size={16} /> : <Lock size={16} />)} 
@@ -453,6 +473,29 @@ export default function ResultPage() {
                 <div style={{ marginTop: 12, fontSize: 13, color: "var(--text-muted)" }}>
                   {authStatus === "authenticated" ? `Current balance: ${credits !== null ? credits : "..."} credits` : "10 Free Credits on Signup"}
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Success Post-Unlock Message */}
+          {unlocked && (
+            <div className="animate-fadeIn" style={{ marginTop: 32, padding: 24, background: "var(--accent-dim)", borderRadius: 20, border: "1px solid var(--accent)", textAlign: "center" }}>
+              <div style={{ fontWeight: 800, fontSize: 20, marginBottom: 12, display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+                <CheckCircle2 size={24} className="text-accent" /> Your Professional CV is Ready!
+              </div>
+              <p style={{ color: "var(--text-secondary)", fontSize: 15, marginBottom: 24, maxWidth: 480, margin: "0 auto 24px" }}>
+                Your download has started. You can also manage all your CVs and top up credits from your dashboard.
+              </p>
+              <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
+                 <button onClick={handlePrint} className="btn btn-primary flex items-center gap-2">
+                    <Download size={16} /> Re-download PDF
+                 </button>
+                 <Link href="/dashboard" className="btn btn-neutral flex items-center gap-2">
+                    <LayoutDashboard size={16} /> Go to Dashboard
+                 </Link>
+                 <Link href="/builder" className="btn btn-ghost flex items-center gap-2">
+                    <Plus size={16} /> Build Another CV
+                 </Link>
               </div>
             </div>
           )}
