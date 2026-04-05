@@ -508,16 +508,20 @@ export default function ResultPage() {
 
         {/* CV Preview */}
         <div style={{ position: "relative", maxWidth: 820, margin: "0 auto" }}>
-          <div ref={previewRef} className="animate-fadeIn" style={{
-            filter: unlocked ? "none" : "blur(4px)",
-            userSelect: unlocked ? "auto" : "none",
-            pointerEvents: unlocked ? "auto" : "none",
-            opacity: unlocked ? 1 : 0.8,
-            transition: "all 0.4s ease"
-          }}>
-            {template === "modern" && <CVModern cv={cv} />}
-            {template === "professional" && <CVProfessional cv={cv} />}
-            {template === "minimal" && <CVMinimal cv={cv} />}
+          <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch", padding: "0 16px" }}>
+            <div style={{ minWidth: 640 }}>
+              <div ref={previewRef} className="animate-fadeIn" style={{
+                filter: unlocked ? "none" : "blur(4px)",
+                userSelect: unlocked ? "auto" : "none",
+                pointerEvents: unlocked ? "auto" : "none",
+                opacity: unlocked ? 1 : 0.8,
+                transition: "all 0.4s ease"
+              }}>
+                {template === "modern" && <CVModern cv={cv} />}
+                {template === "professional" && <CVProfessional cv={cv} />}
+                {template === "minimal" && <CVMinimal cv={cv} />}
+              </div>
+            </div>
           </div>
           
           {/* Paywall Overlay */}
