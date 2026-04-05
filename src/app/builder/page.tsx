@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Twitter, PenSquare, ArrowLeft, ArrowRight, Check, Linkedin } from "lucide-react";
+import { Twitter, PenSquare, ArrowLeft, ArrowRight, Check, Linkedin, AlertCircle, X } from "lucide-react";
 import { BuilderState, UserAnalysis, CompanyAnalysis, ReviewData } from "@/types";
 
 const STEPS = ["You", "Target", "Role", "Review", "Preview"];
@@ -243,7 +243,9 @@ export default function BuilderPage() {
 
         {/* Error */}
         {state.error && (
-          <div className="error-msg" style={{ marginBottom: 24 }}>⚠ {state.error}</div>
+          <div className="error-msg" style={{ marginBottom: 24, display: "flex", alignItems: "center", gap: 8 }}>
+            <AlertCircle size={16} /> {state.error}
+          </div>
         )}
 
         {/* ── STEP 1: Who are you? ── */}
@@ -556,7 +558,7 @@ export default function BuilderPage() {
                       <div style={{ display: "flex", gap: 6 }}>
                         <input className="input" placeholder="Year" style={{ width: 80 }} value={edu.year} onChange={e => updateEducation(idx, "year", e.target.value)} />
                         {state.reviewData!.education.length > 1 && (
-                          <button className="btn btn-ghost" style={{ padding: "8px 10px", color: "var(--accent)" }} onClick={() => removeEducation(idx)}>✕</button>
+                          <button className="btn btn-ghost" style={{ padding: "8px 10px", color: "var(--accent)" }} onClick={() => removeEducation(idx)}><X size={16} /></button>
                         )}
                       </div>
                     </div>

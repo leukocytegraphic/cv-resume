@@ -1,43 +1,47 @@
+"use client";
+
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { Twitter, Target, Cpu, PenSquare, FileText, Zap, Building2, CheckCircle, Download } from "lucide-react";
 
 const features = [
   {
-    icon: "𝕏",
+    icon: <Twitter size={20} />,
     label: "X Profile Scan",
     title: "Your posts reveal your talent",
     desc: "We analyze your X activity to extract real skills, strengths, and professional identity — without a single form to fill.",
     color: "#6366f1",
   },
   {
-    icon: "🎯",
+    icon: <Target size={20} />,
     label: "Company Intelligence",
     title: "Know exactly what they want",
     desc: "Enter any company's X handle. We read their posts and understand their culture, stack, and hiring criteria in seconds.",
     color: "#8b5cf6",
   },
   {
-    icon: "🤖",
+    icon: <Cpu size={20} />,
     label: "AI Skill Matching",
     title: "Match made by Llama 3.3",
     desc: "Groq AI cross-references your profile with what the company needs, highlighting the strongest alignment — like a recruiter in your corner.",
     color: "#06b6d4",
   },
   {
-    icon: "✏️",
+    icon: <PenSquare size={20} />,
     label: "Review & Edit",
     title: "You're always in control",
     desc: "Before generation, review every detail. Add your real education, fix your name, set your email. Your CV, your truth.",
     color: "#10b981",
   },
   {
-    icon: "📄",
+    icon: <FileText size={20} />,
     label: "3 Pro Templates",
     title: "Modern, Professional, or Minimal",
     desc: "Choose from three ATS-friendly templates. Download as PDF with one click — ready to send to any employer.",
     color: "#f59e0b",
   },
   {
-    icon: "⚡",
+    icon: <Zap size={20} />,
     label: "Under 5 Minutes",
     title: "Fast enough for any deadline",
     desc: "From zero to a tailored, employer-ready CV in under 5 minutes. Perfect for quick pivots and last-minute applications.",
@@ -50,31 +54,31 @@ const steps = [
     n: "01",
     title: "Share your X handle",
     desc: "Connect your X profile or type your skills manually. We instantly detect your professional strengths.",
-    icon: "𝕏",
+    icon: <Twitter size={20} />,
   },
   {
     n: "02",
     title: "Add the target company",
     desc: "Drop the company's X handle or paste the job description. We decode exactly what they're after.",
-    icon: "🏢",
+    icon: <Building2 size={20} />,
   },
   {
     n: "03",
     title: "Pick your role",
     desc: "AI suggests best-fit roles based on your profile. Pick one or type your own custom role.",
-    icon: "🎯",
+    icon: <Target size={20} />,
   },
   {
     n: "04",
     title: "Review & confirm your details",
     desc: "Add your real contact info and education. No fabricated data on your final CV — ever.",
-    icon: "✅",
+    icon: <CheckCircle size={20} />,
   },
   {
     n: "05",
     title: "Download your CV",
     desc: "Preview your ATS-optimized CV, choose a template, and download as a clean PDF instantly.",
-    icon: "📥",
+    icon: <Download size={20} />,
   },
 ];
 
@@ -86,6 +90,8 @@ const stats = [
 ];
 
 export default function Home() {
+  const { status } = useSession();
+
   return (
     <main className="landing">
       {/* ── NAV ── */}
@@ -101,8 +107,8 @@ export default function Home() {
           <div className="flex items-center gap-4">
             <a href="#features" style={{ color: "var(--text-muted)", fontSize: 14, textDecoration: "none" }}>Features</a>
             <a href="#how" style={{ color: "var(--text-muted)", fontSize: 14, textDecoration: "none" }}>How it works</a>
-            <Link href="/builder" className="btn btn-primary btn-sm">
-              Build for free →
+            <Link href={status === "authenticated" ? "/dashboard" : "/builder"} className="btn btn-primary btn-sm">
+              {status === "authenticated" ? "Dashboard" : "Build for free →"}
             </Link>
           </div>
         </div>
