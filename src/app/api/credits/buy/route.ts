@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const price = (amount * 0.05).toFixed(2);
     // tx_ref contains user ID and amount bought
     const txRef = `CVC_${Date.now()}_${(session.user as any).id}_${amount}`;
-    const baseUrl = process.env.NEXTAUTH_URL || "https://cv.creatorops.site";
+    const baseUrl = process.env.NEXTAUTH_URL || "https://cvbuilder.creatorops.site";
 
     const response = await fetch("https://api.flutterwave.com/v3/payments", {
       method: "POST",

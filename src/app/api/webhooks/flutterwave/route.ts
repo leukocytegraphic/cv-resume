@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const tx_ref = searchParams.get("tx_ref");
   const transaction_id = searchParams.get("transaction_id");
 
-  const baseUrl = process.env.NEXTAUTH_URL || "https://cv.creatorops.site";
+  const baseUrl = process.env.NEXTAUTH_URL || "https://cvbuilder.creatorops.site";
 
   if (status === "successful" && tx_ref) {
     // Basic verification - typically you verify by calling Flutterwave API with transaction_id

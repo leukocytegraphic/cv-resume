@@ -12,11 +12,11 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "CreatorOps CV Builder | AI Powered Resume Creator",
   description: "Build an instant, professional CV tailored for high-ticket clients, Web3, and Tech roles. 10 Free Credits on Signup.",
-  metadataBase: new URL("https://cv.creatorops.site"),
+  metadataBase: new URL("https://cvbuilder.creatorops.site"),
   openGraph: {
     title: "CreatorOps CV Builder",
     description: "Generate a targeted CV from your X/LinkedIn profile.",
-    url: "https://cv.creatorops.site",
+    url: "https://cvbuilder.creatorops.site",
     siteName: "CreatorOps CV",
     locale: "en_US",
     type: "website",

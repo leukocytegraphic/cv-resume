@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: "/result",
     },
-    sitemap: "https://cv.creatorops.site/sitemap.xml",
+    sitemap: "https://cvbuilder.creatorops.site/sitemap.xml",
   };
 }
