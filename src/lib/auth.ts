@@ -16,6 +16,15 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // If result page is in the URL, strictly return it
+      if (url.includes("/result")) return url.startsWith(baseUrl) ? url : `${baseUrl}${url}`;
+      // Allow relative URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      // Allow absolute URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    },
     async jwt({ token, account, profile }) {
       if (account) {
         token.accessToken = account.access_token;
@@ -43,8 +52,5 @@ export const authOptions: NextAuthOptions = {
       }
       return session;
     },
-  },
-  pages: {
-    signIn: "/builder",
   },
 };

@@ -253,6 +253,18 @@ export default function BuilderPage() {
           <div className="step-panel">
             <div className="card" style={{ padding: 32 }}>
               <h2 style={{ fontSize: 22, fontWeight: 700, marginBottom: 6 }}>Tell us about you</h2>
+              
+              {typeof window !== "undefined" && sessionStorage.getItem("cvData") && (
+                <div style={{ background: "var(--accent-dim)", padding: "16px", borderRadius: 12, border: "1px solid var(--accent)", marginBottom: 24, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>
+                    <span style={{ fontWeight: 700, color: "var(--accent-light)" }}>Welcome back!</span> We found your generated CV.
+                  </div>
+                  <button onClick={() => router.push("/result")} className="btn btn-primary btn-sm">
+                    Resume CV →
+                  </button>
+                </div>
+              )}
+
               <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 28 }}>
                 We&apos;ll analyze your X profile or you can type your skills manually.
               </p>

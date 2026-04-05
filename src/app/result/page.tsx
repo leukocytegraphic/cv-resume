@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useSession, signIn } from "next-auth/react";
@@ -269,33 +269,7 @@ export default function ResultPage() {
   const [unlocking, setUnlocking] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const data = sessionStorage.getItem("cvData");
-    const tpl = sessionStorage.getItem("cvTemplate");
-    const isUnlocked = sessionStorage.getItem("cvUnlocked") === "true";
-    if (data) setCv(JSON.parse(data));
-    if (tpl) setTemplate(tpl as CVTemplate);
-    if (isUnlocked) setUnlocked(true);
-
-    if (authStatus === "authenticated") {
-      fetchCredits();
-      
-      const pending = sessionStorage.getItem("pendingUnlock");
-      if (pending === "true" && !isUnlocked) {
-        sessionStorage.removeItem("pendingUnlock");
-        handleUnlock();
-      }
-
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("payment") === "completed") {
-         setUnlocked(true);
-         sessionStorage.setItem("cvUnlocked", "true");
-         router.replace(window.location.pathname);
-      }
-    }
-  }, [authStatus, router]);
-
-  const fetchCredits = async () => {
+  const fetchCredits = useCallback(async () => {
     try {
       const res = await fetch("/api/credits");
       if (res.ok) {
@@ -305,11 +279,11 @@ export default function ResultPage() {
         setCredits(10);
       }
     } catch {
-      setCredits(10);
+      setCredits(0);
     }
-  };
+  }, []);
 
-  const handleUnlock = async () => {
+  const handleUnlock = useCallback(async () => {
     if (authStatus === "unauthenticated") {
       sessionStorage.setItem("pendingUnlock", "true");
       signIn("twitter", { callbackUrl: window.location.href });
@@ -336,7 +310,33 @@ export default function ResultPage() {
     } finally {
       setUnlocking(false);
     }
-  };
+  }, [authStatus, credits, fetchCredits]);
+
+  useEffect(() => {
+    const data = sessionStorage.getItem("cvData");
+    const tpl = sessionStorage.getItem("cvTemplate");
+    const isUnlocked = sessionStorage.getItem("cvUnlocked") === "true";
+    if (data) setCv(JSON.parse(data));
+    if (tpl) setTemplate(tpl as CVTemplate);
+    if (isUnlocked) setUnlocked(true);
+
+    if (authStatus === "authenticated") {
+      fetchCredits();
+      
+      const pending = sessionStorage.getItem("pendingUnlock");
+      if (pending === "true" && !isUnlocked) {
+        sessionStorage.removeItem("pendingUnlock");
+        handleUnlock();
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("payment") === "completed") {
+         setUnlocked(true);
+         sessionStorage.setItem("cvUnlocked", "true");
+         router.replace(window.location.pathname);
+      }
+    }
+  }, [authStatus, router, fetchCredits, handleUnlock]);
 
   const handlePrint = () => {
     setPrinting(true);
