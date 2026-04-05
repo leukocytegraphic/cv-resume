@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Twitter, PenSquare, ArrowLeft, ArrowRight, Check, Linkedin } from "lucide-react";
 import { BuilderState, UserAnalysis, CompanyAnalysis, ReviewData } from "@/types";
 
 const STEPS = ["You", "Target", "Role", "Review", "Preview"];
@@ -10,10 +11,14 @@ const STEPS = ["You", "Target", "Role", "Review", "Preview"];
 const initialState: BuilderState = {
   step: 1,
   useXAuth: false,
+  useLinkedIn: false,
   twitterHandle: "",
+  linkedInUrl: "",
   manualSkills: "",
   manualAreas: "",
   companyHandle: "",
+  useLinkedInCompany: false,
+  linkedInCompanyUrl: "",
   manualJobDescription: "",
   useManualCompany: false,
   selectedRole: "",
@@ -102,7 +107,7 @@ export default function BuilderPage() {
     }
   };
 
-  // ── Step 3 → Step 4: Go to Review ────────────────────────────────────
+  // ── Step 3 <ArrowRight size={14} style={{ display: "inline", marginBottom: -2 }} /> Step 4: Go to Review ────────────────────────────────────
   const goToReview = () => {
     const role = state.customRole || state.selectedRole;
     if (!role) { update({ error: "Please select or type a role." }); return; }
@@ -215,7 +220,7 @@ export default function BuilderPage() {
         {/* Header */}
         <div className="builder-header">
           <Link href="/" style={{ color: "var(--text-muted)", fontSize: 13, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 20 }}>
-            ← Back
+            <ArrowLeft size={14} style={{ display: "inline", marginBottom: -2 }} /> Back
           </Link>
           <h1 style={{ fontSize: 28, fontWeight: 800 }}>Build your CV</h1>
           <p style={{ color: "var(--text-secondary)", fontSize: 14, marginTop: 6 }}>Answer a few questions and we&apos;ll do the rest.</p>
@@ -227,7 +232,7 @@ export default function BuilderPage() {
               {STEPS.map((label, i) => (
                 <div key={label} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
                   <div className={`progress-step-dot ${state.step === i + 1 ? "active" : state.step > i + 1 ? "done" : ""}`}>
-                    {state.step > i + 1 ? "✓" : i + 1}
+                    {state.step > i + 1 ? <Check size={14} style={{ display: "inline", marginBottom: -2 }} /> : i + 1}
                   </div>
                   <span style={{ fontSize: 11, color: state.step === i + 1 ? "var(--accent-light)" : "var(--text-muted)" }}>{label}</span>
                 </div>
@@ -252,28 +257,31 @@ export default function BuilderPage() {
 
               {/* Toggle */}
               <div className="option-toggle" style={{ marginBottom: 24 }}>
-                <button className={`option-toggle-btn ${state.useXAuth ? "active" : ""}`} onClick={() => update({ useXAuth: true, error: null })}>
-                  𝕏 X Profile
+                <button className={`option-toggle-btn ${state.useXAuth && !state.useLinkedIn ? "active" : ""}`} onClick={() => update({ useXAuth: true, useLinkedIn: false, error: null })}>
+                  <Twitter size={14} style={{ display: "inline", marginBottom: -2 }} /> X Profile
                 </button>
-                <button className={`option-toggle-btn ${!state.useXAuth ? "active" : ""}`}
-                  onClick={() => update({ useXAuth: false, error: null })}>
-                  ✏️ Manual
+                <button className={`option-toggle-btn ${state.useLinkedIn ? "active" : ""}`} onClick={() => update({ useXAuth: false, useLinkedIn: true, error: null })}>
+                  <Linkedin size={14} style={{ display: "inline", marginBottom: -2 }} /> LinkedIn
+                </button>
+                <button className={`option-toggle-btn ${!state.useXAuth && !state.useLinkedIn ? "active" : ""}`}
+                  onClick={() => update({ useXAuth: false, useLinkedIn: false, error: null })}>
+                  <PenSquare size={14} style={{ display: "inline", marginBottom: -2 }} /> Manual
                 </button>
               </div>
 
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 8, color: "var(--text-secondary)" }}>
-                  {state.useXAuth ? "Your X handle" : "Your name or handle"} <span style={{ color: "var(--text-muted)" }}>{state.useXAuth ? "(e.g. @elonmusk)" : ""}</span>
+                  {state.useXAuth ? "Your X handle" : state.useLinkedIn ? "Your LinkedIn URL" : "Your name or handle"} <span style={{ color: "var(--text-muted)" }}>{state.useXAuth ? "(e.g. @elonmusk)" : state.useLinkedIn ? "(e.g. https://linkedin.com/in/elonmusk)" : ""}</span>
                 </label>
                 <input
                   className="input"
-                  placeholder={state.useXAuth ? "@yourhandle" : "e.g. John Doe"}
-                  value={state.twitterHandle}
-                  onChange={e => update({ twitterHandle: e.target.value })}
+                  placeholder={state.useXAuth ? "@yourhandle" : state.useLinkedIn ? "https://linkedin.com/in/yourprofile" : "e.g. John Doe"}
+                  value={state.useLinkedIn ? state.linkedInUrl : state.twitterHandle}
+                  onChange={e => state.useLinkedIn ? update({ linkedInUrl: e.target.value }) : update({ twitterHandle: e.target.value })}
                 />
               </div>
 
-              {!state.useXAuth && (
+              {!(state.useXAuth || state.useLinkedIn) && (
                 <>
                   <div style={{ marginBottom: 16 }}>
                     <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 8, color: "var(--text-secondary)" }}>
@@ -312,7 +320,7 @@ export default function BuilderPage() {
                 {state.analyzingUser ? (
                   <><div className="spinner" /> Analyzing your profile…</>
                 ) : (
-                  "Analyze & Continue →"
+                  <>Analyze & Continue <ArrowRight size={14} style={{ display: "inline", marginBottom: -2 }} /></>
                 )}
               </button>
             </div>
@@ -332,7 +340,7 @@ export default function BuilderPage() {
                     <div style={{ fontWeight: 600 }}>{state.userAnalysis.displayName}</div>
                     <div style={{ fontSize: 13, color: "var(--text-secondary)" }}>@{state.userAnalysis.twitterHandle} · {state.userAnalysis.experienceLevel} level</div>
                   </div>
-                  <span className="badge badge-success" style={{ marginLeft: "auto" }}>✓ Analyzed</span>
+                  <span className="badge badge-success" style={{ marginLeft: "auto" }}><Check size={14} style={{ display: "inline", marginBottom: -2 }} /> Analyzed</span>
                 </div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                   {state.userAnalysis.skills.slice(0, 8).map(s => (
@@ -349,23 +357,26 @@ export default function BuilderPage() {
               </p>
 
               <div className="option-toggle" style={{ marginBottom: 24 }}>
-                <button className={`option-toggle-btn ${!state.useManualCompany ? "active" : ""}`} onClick={() => update({ useManualCompany: false })}>
-                  𝕏 Company X Handle
+                <button className={`option-toggle-btn ${!state.useManualCompany && !state.useLinkedInCompany ? "active" : ""}`} onClick={() => update({ useManualCompany: false, useLinkedInCompany: false })}>
+                  <Twitter size={14} style={{ display: "inline", marginBottom: -2 }} /> Company X
                 </button>
-                <button className={`option-toggle-btn ${state.useManualCompany ? "active" : ""}`} onClick={() => update({ useManualCompany: true })}>
-                  ✏️ Paste Job Description
+                <button className={`option-toggle-btn ${state.useLinkedInCompany ? "active" : ""}`} onClick={() => update({ useManualCompany: false, useLinkedInCompany: true })}>
+                  <Linkedin size={14} style={{ display: "inline", marginBottom: -2 }} /> LinkedIn
+                </button>
+                <button className={`option-toggle-btn ${state.useManualCompany ? "active" : ""}`} onClick={() => update({ useManualCompany: true, useLinkedInCompany: false })}>
+                  <PenSquare size={14} style={{ display: "inline", marginBottom: -2 }} /> Manual
                 </button>
               </div>
 
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: "block", fontSize: 13, fontWeight: 500, marginBottom: 8, color: "var(--text-secondary)" }}>
-                  {state.useManualCompany ? "Company name" : "Company X handle"}
+                  {state.useManualCompany ? "Company name" : state.useLinkedInCompany ? "Company LinkedIn URL" : "Company X handle"}
                 </label>
                 <input
                   className="input"
-                  placeholder={state.useManualCompany ? "e.g. Miden Protocol" : "@0xmiden"}
-                  value={state.companyHandle}
-                  onChange={e => update({ companyHandle: e.target.value.trim() })}
+                  placeholder={state.useManualCompany ? "e.g. Miden Protocol" : state.useLinkedInCompany ? "e.g. https://linkedin.com/company/miden" : "@0xmiden"}
+                  value={state.useLinkedInCompany ? state.linkedInCompanyUrl : state.companyHandle}
+                  onChange={e => state.useLinkedInCompany ? update({ linkedInCompanyUrl: e.target.value }) : update({ companyHandle: e.target.value.trim() })}
                 />
               </div>
 
@@ -385,7 +396,7 @@ export default function BuilderPage() {
               )}
 
               <div className="flex gap-3" style={{ marginTop: 28 }}>
-                <button className="btn btn-ghost" onClick={() => update({ step: 1 })}>← Back</button>
+                <button className="btn btn-ghost" onClick={() => update({ step: 1 })}><ArrowLeft size={14} style={{ display: "inline", marginBottom: -2 }} /> Back</button>
                 <button
                   id="analyze-company-btn"
                   className="btn btn-primary"
@@ -396,7 +407,7 @@ export default function BuilderPage() {
                   {state.analyzingCompany ? (
                     <><div className="spinner" /> Analyzing company…</>
                   ) : (
-                    "Analyze & Continue →"
+                    <>Analyze & Continue <ArrowRight size={14} style={{ display: "inline", marginBottom: -2 }} /></>
                   )}
                 </button>
               </div>
@@ -453,14 +464,14 @@ export default function BuilderPage() {
               </div>
 
               <div className="flex gap-3">
-                <button className="btn btn-ghost" onClick={() => update({ step: 2 })}>← Back</button>
+                <button className="btn btn-ghost" onClick={() => update({ step: 2 })}><ArrowLeft size={14} style={{ display: "inline", marginBottom: -2 }} /> Back</button>
                 <button
                   id="go-to-review-btn"
                   className="btn btn-primary"
                   style={{ flex: 1, padding: "14px" }}
                   onClick={goToReview}
                 >
-                  Review my details →
+                  <>Review my details <ArrowRight size={14} style={{ display: "inline", marginBottom: -2 }} /></>
                 </button>
               </div>
             </div>
@@ -557,7 +568,7 @@ export default function BuilderPage() {
               </div>
 
               <div className="flex gap-3" style={{ marginTop: 32 }}>
-                <button className="btn btn-ghost" onClick={() => update({ step: 3 })}>← Back</button>
+                <button className="btn btn-ghost" onClick={() => update({ step: 3 })}><ArrowLeft size={14} style={{ display: "inline", marginBottom: -2 }} /> Back</button>
                 <button
                   id="generate-cv-btn"
                   className="btn btn-primary"
@@ -568,7 +579,7 @@ export default function BuilderPage() {
                   {state.generatingCV ? (
                     <><div className="spinner" /> Generating your CV…</>
                   ) : (
-                    "Generate My CV →"
+                    <>Generate My CV <ArrowRight size={14} style={{ display: "inline", marginBottom: -2 }} /></>
                   )}
                 </button>
               </div>

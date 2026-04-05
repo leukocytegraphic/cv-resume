@@ -1,0 +1,4 @@
+services.addons.mozilla.org:HSTS	0	20381	1792508909748,1,0
+incoming.telemetry.mozilla.org:HSTS	0	20381	1792508371944,1,0
+blocklist.addons.mozilla.org:HSTS	0	20381	1792509030173,1,0
+aus5.mozilla.org:HSTS	0	20381	1792508369929,1,0

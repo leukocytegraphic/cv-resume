@@ -81,11 +81,15 @@ export interface BuilderState {
   step: number;
   // Step 1
   useXAuth: boolean;
+  useLinkedIn: boolean;
   twitterHandle: string;
+  linkedInUrl: string;
   manualSkills: string;
   manualAreas: string;
   // Step 2
   companyHandle: string;
+  useLinkedInCompany: boolean;
+  linkedInCompanyUrl: string;
   manualJobDescription: string;
   useManualCompany: boolean;
   // Step 3

@@ -10,9 +10,22 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "CV Builder — AI-Powered Resume in 5 Minutes",
-  description:
-    "Instantly build a professional, tailored CV from your X profile. Powered by AI. Ready in under 5 minutes.",
+  title: "CreatorOps CV Builder | AI Powered Resume Creator",
+  description: "Build an instant, professional CV tailored for high-ticket clients, Web3, and Tech roles. 10 Free Credits on Signup.",
+  metadataBase: new URL("https://cv.creatorops.site"),
+  openGraph: {
+    title: "CreatorOps CV Builder",
+    description: "Generate a targeted CV from your X/LinkedIn profile.",
+    url: "https://cv.creatorops.site",
+    siteName: "CreatorOps CV",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CreatorOps CV Builder | AI Powered Resume Creator",
+    description: "Build an instant CV from your X/LinkedIn profile. Perfect for tech and Web3.",
+  },
 };
 
 export default function RootLayout({

@@ -3,32 +3,11 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Twitter, MapPin, Mail, Phone, Link as LinkIcon, Download, Sparkles, RefreshCw, Lock, Coins, Check, ArrowLeft } from "lucide-react";
 import { CVData, CVTemplate } from "@/types";
 
-const WALLET = "0x1c1f06de52D8Ed77ec11B167DAE588A598103D2b";
-
-/* ── Watermark (subtle bottom-corner) ─────────────────────────────────── */
-function Watermark() {
-  return (
-    <div style={{
-      position: "absolute",
-      bottom: 16,
-      right: 18,
-      fontSize: 9,
-      color: "rgba(120,100,200,0.28)",
-      fontWeight: 500,
-      letterSpacing: "0.06em",
-      userSelect: "none",
-      pointerEvents: "none",
-      fontFamily: "Inter, sans-serif",
-    }}>
-      CV Designed by Leukocyte
-    </div>
-  );
-}
-
 /* ── CV Templates ──────────────────────────────────────────────────────── */
-function CVModern({ cv, watermark }: { cv: CVData; watermark: boolean }) {
+function CVModern({ cv }: { cv: CVData }) {
   const pi = (cv as any).personalInfo || {};
   const skills: string[] = (cv as any).skills || [];
   const experience: any[] = (cv as any).experience || [];
@@ -37,7 +16,6 @@ function CVModern({ cv, watermark }: { cv: CVData; watermark: boolean }) {
 
   return (
     <div className="cv-modern" id="cv-preview" style={{ position: "relative" }}>
-      {watermark && <Watermark />}
       <div className="cv-modern-header">
         <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 20 }}>
           {pi.avatarUrl && (
@@ -49,12 +27,12 @@ function CVModern({ cv, watermark }: { cv: CVData; watermark: boolean }) {
           </div>
         </div>
         <p className="summary">{pi.summary}</p>
-        <div style={{ marginTop: 16, fontSize: 12, opacity: 0.7, display: "flex", flexWrap: "wrap", gap: "12px" }}>
-          {pi.email && <span>✉ {pi.email}</span>}
-          {pi.phone && <span>✆ {pi.phone}</span>}
-          {pi.location && <span>📍 {pi.location}</span>}
-          {pi.website && <span>🔗 {pi.website}</span>}
-          {pi.twitterHandle && <span>𝕏 @{pi.twitterHandle}</span>}
+        <div style={{ marginTop: 16, fontSize: 12, opacity: 0.7, display: "flex", flexWrap: "wrap", gap: "12px", alignItems: "center" }}>
+          {pi.email && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Mail size={12} /> {pi.email}</span>}
+          {pi.phone && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Phone size={12} /> {pi.phone}</span>}
+          {pi.location && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><MapPin size={12} /> {pi.location}</span>}
+          {pi.website && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><LinkIcon size={12} /> {pi.website}</span>}
+          {pi.twitterHandle && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Twitter size={12} /> @{pi.twitterHandle}</span>}
         </div>
       </div>
 
@@ -115,7 +93,7 @@ function CVModern({ cv, watermark }: { cv: CVData; watermark: boolean }) {
   );
 }
 
-function CVProfessional({ cv, watermark }: { cv: CVData; watermark: boolean }) {
+function CVProfessional({ cv }: { cv: CVData }) {
   const pi = (cv as any).personalInfo || {};
   const skills: string[] = (cv as any).skills || [];
   const experience: any[] = (cv as any).experience || [];
@@ -124,7 +102,6 @@ function CVProfessional({ cv, watermark }: { cv: CVData; watermark: boolean }) {
 
   return (
     <div className="cv-professional" id="cv-preview" style={{ position: "relative" }}>
-      {watermark && <Watermark />}
       <div className="cv-professional-header">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
@@ -134,11 +111,11 @@ function CVProfessional({ cv, watermark }: { cv: CVData; watermark: boolean }) {
           {pi.avatarUrl && <img src={pi.avatarUrl} alt={pi.name} style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover" }} />}
         </div>
         <p className="summary">{pi.summary}</p>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginTop: 12, fontSize: 12, color: "#6b7280" }}>
-          {pi.email && <span>✉ {pi.email}</span>}
-          {pi.phone && <span>✆ {pi.phone}</span>}
-          {pi.location && <span>📍 {pi.location}</span>}
-          {pi.website && <span>🔗 {pi.website}</span>}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, marginTop: 12, fontSize: 12, color: "#6b7280", alignItems: "center" }}>
+          {pi.email && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Mail size={12} /> {pi.email}</span>}
+          {pi.phone && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><Phone size={12} /> {pi.phone}</span>}
+          {pi.location && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><MapPin size={12} /> {pi.location}</span>}
+          {pi.website && <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}><LinkIcon size={12} /> {pi.website}</span>}
         </div>
       </div>
       <div className="cv-professional-body">
@@ -200,7 +177,7 @@ function CVProfessional({ cv, watermark }: { cv: CVData; watermark: boolean }) {
   );
 }
 
-function CVMinimal({ cv, watermark }: { cv: CVData; watermark: boolean }) {
+function CVMinimal({ cv }: { cv: CVData }) {
   const pi = (cv as any).personalInfo || {};
   const skills: string[] = (cv as any).skills || [];
   const experience: any[] = (cv as any).experience || [];
@@ -209,10 +186,9 @@ function CVMinimal({ cv, watermark }: { cv: CVData; watermark: boolean }) {
 
   return (
     <div className="cv-minimal" id="cv-preview" style={{ position: "relative" }}>
-      {watermark && <Watermark />}
       <h1>{pi.name || "Your Name"}</h1>
       <div className="title">{pi.title || cv.targetRole}</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 6, marginBottom: 16, fontSize: 12, color: "#9ca3af" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 6, marginBottom: 16, fontSize: 12, color: "#9ca3af", alignItems: "center" }}>
         {pi.email && <span>{pi.email}</span>}
         {pi.phone && <span>{pi.phone}</span>}
         {pi.location && <span>{pi.location}</span>}
@@ -272,14 +248,39 @@ function CVMinimal({ cv, watermark }: { cv: CVData; watermark: boolean }) {
   );
 }
 
-/* ── Payment Modal ─────────────────────────────────────────────────────── */
-function PaymentModal({ onClose, onUnlock }: { onClose: () => void; onUnlock: () => void }) {
-  const [copied, setCopied] = useState(false);
+/* ── Buy Credits Modal ─────────────────────────────────────────────────────── */
+function BuyCreditsModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [amount, setAmount] = useState(20);
+  const [loading, setLoading] = useState(false);
 
-  const copyWallet = () => {
-    navigator.clipboard.writeText(WALLET);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  // 1 credit = $0.05
+  const price = (amount * 0.05).toFixed(2);
+
+  const handleCheckout = async () => {
+    setLoading(true);
+    try {
+      // In a real app we'd call /api/checkout/flutterwave
+      // Since we just have basic setup, simulate payment success
+      // Mocking for now to avoid complicated Stripe/Flutterwave redirect setup in UI previews
+      const res = await fetch("/api/credits/buy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount })
+      });
+      // Check if standard keys are used and link generated
+      const data = await res.json();
+      if (data.payment_url) {
+         window.location.href = data.payment_url;
+      } else if (data.fallback) {
+         window.location.href = data.mockUrl;
+      } else {
+         throw new Error("Missing link");
+      }
+    } catch (err) {
+      alert("Error initiating payment.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -298,42 +299,29 @@ function PaymentModal({ onClose, onUnlock }: { onClose: () => void; onUnlock: ()
         boxShadow: "0 24px 60px rgba(0,0,0,0.6)",
         textAlign: "center",
       }}>
-        <div style={{ fontSize: 40, marginBottom: 16 }}>✨</div>
-        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Remove Watermark</h2>
-        <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 28, lineHeight: 1.6 }}>
-          Support the project with a one-time payment of <strong style={{ color: "var(--accent-light)" }}>$2 USD</strong> in ETH or any EVM token.
-          After sending, click "I&apos;ve Paid" to unlock your clean download.
-        </p>
-
-        {/* Wallet */}
-        <div style={{
-          background: "var(--bg-elevated)", border: "1px solid var(--border)",
-          borderRadius: 12, padding: "16px 20px", marginBottom: 16,
-          display: "flex", alignItems: "center", gap: 12,
-        }}>
-          <div style={{ flex: 1, textAlign: "left" }}>
-            <div style={{ fontSize: 11, color: "var(--text-muted)", marginBottom: 4, fontWeight: 600, letterSpacing: "0.06em" }}>ETH WALLET (EVM)</div>
-            <div style={{ fontSize: 12, color: "var(--accent-light)", fontFamily: "monospace", wordBreak: "break-all" }}>{WALLET}</div>
-          </div>
-          <button
-            onClick={copyWallet}
-            style={{
-              padding: "8px 14px", borderRadius: 8,
-              background: copied ? "var(--success-dim)" : "var(--accent-dim)",
-              color: copied ? "var(--success)" : "var(--accent-light)",
-              border: "1px solid", fontFamily: "var(--font)", fontSize: 12,
-              fontWeight: 600, cursor: "pointer", flexShrink: 0,
-              borderColor: copied ? "rgba(16,185,129,0.3)" : "rgba(124,58,237,0.3)",
-            }}
-          >
-            {copied ? "✓ Copied!" : "Copy"}
-          </button>
+        <div style={{ display: "inline-flex", background: "var(--accent-dim)", color: "var(--accent-light)", padding: 16, borderRadius: "50%", marginBottom: 16 }}>
+          <Coins size={32} />
         </div>
-
-        <p style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 28 }}>
-          Send exactly <strong>~$2 USD worth</strong> of ETH, USDC, or any EVM token to the address above.
-          Compatible with MetaMask, Coinbase Wallet, Trust Wallet, etc.
+        <h2 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Buy Credits</h2>
+        <p style={{ color: "var(--text-secondary)", fontSize: 14, marginBottom: 28, lineHeight: 1.6 }}>
+          1 Credit = <strong style={{ color: "var(--accent-light)" }}>$0.05</strong>. Downloads cost 5 credits.
         </p>
+
+        <div style={{ marginBottom: 24, display: "flex", flexDirection: "column", gap: 12 }}>
+          {[10, 20, 50, 100].map(val => (
+            <button key={val} onClick={() => setAmount(val)} style={{
+              padding: "16px", borderRadius: 12,
+              border: amount === val ? "2px solid var(--accent)" : "1px solid var(--border)",
+              background: amount === val ? "var(--accent-dim)" : "transparent",
+              color: amount === val ? "var(--accent)" : "inherit",
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              cursor: "pointer", fontSize: 15, fontWeight: 600
+            }}>
+              <span className="flex items-center gap-2"><Coins size={16} /> {val} Credits</span>
+              <span>${(val * 0.05).toFixed(2)}</span>
+            </button>
+          ))}
+        </div>
 
         <div style={{ display: "flex", gap: 12 }}>
           <button onClick={onClose} style={{
@@ -344,14 +332,15 @@ function PaymentModal({ onClose, onUnlock }: { onClose: () => void; onUnlock: ()
           }}>
             Cancel
           </button>
-          <button onClick={onUnlock} style={{
+          <button onClick={handleCheckout} disabled={loading} style={{
             flex: 2, padding: "12px", borderRadius: 999,
             background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
             color: "white", fontFamily: "var(--font)", fontSize: 14,
             fontWeight: 700, cursor: "pointer", border: "none",
             boxShadow: "0 4px 20px rgba(124,58,237,0.4)",
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 8
           }}>
-            ✓ I&apos;ve Paid — Unlock Clean PDF
+            {loading ? <RefreshCw className="spinner" size={16} /> : <><Check size={16} /> Pay ${price} with Flutterwave</>}
           </button>
         </div>
       </div>
@@ -371,35 +360,73 @@ export default function ResultPage() {
   const [cv, setCv] = useState<CVData | null>(null);
   const [template, setTemplate] = useState<CVTemplate>("modern");
   const [printing, setPrinting] = useState(false);
-  const [watermarkEnabled, setWatermarkEnabled] = useState(true);
-  const [showPayModal, setShowPayModal] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
+  const [showBuyModal, setShowBuyModal] = useState(false);
+  const [credits, setCredits] = useState<number | null>(null);
+  const [unlocking, setUnlocking] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("cvData");
     const storedTemplate = sessionStorage.getItem("cvTemplate") as CVTemplate;
-    const unlocked = sessionStorage.getItem("watermarkUnlocked") === "true";
+    const isUnlocked = sessionStorage.getItem("cvUnlocked") === "true";
     if (!stored) { router.push("/builder"); return; }
     setCv(JSON.parse(stored));
     if (storedTemplate) setTemplate(storedTemplate);
-    if (unlocked) setWatermarkEnabled(false);
+    if (isUnlocked) setUnlocked(true);
+
+    fetchCredits();
   }, [router]);
+
+  const fetchCredits = async () => {
+    try {
+      const res = await fetch("/api/credits");
+      if (res.ok) {
+        const data = await res.json();
+        setCredits(data.credits);
+      } else {
+        // Fallback for UI if totally local/no db
+        setCredits(10);
+      }
+    } catch {
+      setCredits(10);
+    }
+  };
+
+  const handleUnlock = async () => {
+    if (credits !== null && credits < 5) {
+      setShowBuyModal(true);
+      return;
+    }
+    setUnlocking(true);
+    try {
+      // Simulate deducting API
+      const res = await fetch("/api/credits/deduct", { method: "POST" });
+      if (!res.ok) {
+        // Fallback simulation
+        if (credits !== null) setCredits(credits - 5);
+      } else {
+        await fetchCredits();
+      }
+      
+      setUnlocked(true);
+      sessionStorage.setItem("cvUnlocked", "true");
+    } catch {
+      alert("Failed to unlock.");
+    } finally {
+      setUnlocking(false);
+    }
+  };
 
   const handlePrint = () => {
     setPrinting(true);
     setTimeout(() => { window.print(); setPrinting(false); }, 100);
   };
 
-  const handleUnlockPaid = () => {
-    setWatermarkEnabled(false);
-    sessionStorage.setItem("watermarkUnlocked", "true");
-    setShowPayModal(false);
-    setTimeout(handlePrint, 300);
-  };
-
   const handleStartOver = () => {
     sessionStorage.removeItem("cvData");
     sessionStorage.removeItem("cvTemplate");
+    sessionStorage.removeItem("cvUnlocked");
     router.push("/builder");
   };
 
@@ -423,22 +450,41 @@ export default function ResultPage() {
             margin: 0 !important;
             border-radius: 0 !important;
             max-width: 100% !important;
+            filter: none !important;
           }
+          @page { size: A4; margin: 0; }
         }
       `}</style>
 
-      {showPayModal && <PaymentModal onClose={() => setShowPayModal(false)} onUnlock={handleUnlockPaid} />}
+      {showBuyModal && <BuyCreditsModal onClose={() => setShowBuyModal(false)} onSuccess={() => {
+        setShowBuyModal(false);
+        fetchCredits();
+      }} />}
 
       <div className="result-page">
         {/* Toolbar */}
         <div className="result-toolbar print-hide">
           <div className="flex items-center gap-3">
-            <Link href="/" style={{ color: "var(--text-muted)", fontSize: 13, textDecoration: "none" }}>← Home</Link>
+            <Link href="/" style={{ color: "var(--text-muted)", fontSize: 13, textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
+              <ArrowLeft size={14} /> Home
+            </Link>
             <span style={{ color: "var(--border)" }}>|</span>
-            <span style={{ fontSize: 14, fontWeight: 600 }}>Your CV is ready 🎉</span>
+            <span style={{ fontSize: 14, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+               Your CV is ready <Sparkles size={16} className="text-accent" />
+            </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
+            <div className="text-sm font-medium flex items-center gap-2" style={{ color: "var(--text-secondary)", marginRight: 8 }}>
+              <Coins size={16} className="text-accent" /> {credits !== null ? credits : "..."} Credits
+              <button 
+                onClick={() => setShowBuyModal(true)} 
+                style={{ background: "transparent", border: "1px solid var(--border)", fontSize: 11, padding: "2px 8px", borderRadius: 99, marginLeft: 6, cursor: "pointer" }}
+              >
+                Buy More
+              </button>
+            </div>
+
             <div className="template-switcher">
               {TEMPLATES.map(t => (
                 <button key={t.id} id={`template-${t.id}`} className={`template-btn ${template === t.id ? "active" : ""}`} onClick={() => setTemplate(t.id)}>
@@ -447,43 +493,62 @@ export default function ResultPage() {
               ))}
             </div>
 
-            {/* Download with watermark (free) */}
-            <button id="download-pdf-btn" className="btn btn-ghost" onClick={handlePrint} disabled={printing}>
-              {printing ? <><div className="spinner" /> Preparing…</> : "⬇ Download (Free)"}
-            </button>
-
-            {/* Download without watermark ($2) */}
-            {watermarkEnabled ? (
-              <button id="download-clean-btn" className="btn btn-primary" onClick={() => setShowPayModal(true)}>
-                ✨ Clean PDF — $2
+            {unlocked ? (
+              <button id="download-clean-btn" className="btn btn-primary flex items-center gap-2" onClick={handlePrint} disabled={printing}>
+                {printing ? <RefreshCw size={16} className="spinner" /> : <Download size={16} />} 
+                {printing ? "Preparing…" : "Download PDF"}
               </button>
             ) : (
-              <button id="download-clean-btn" className="btn btn-primary" onClick={handlePrint} disabled={printing}>
-                ⬇ Download Clean PDF
+              <button className="btn btn-primary flex items-center gap-2" onClick={handleUnlock} disabled={unlocking}>
+                {unlocking ? <RefreshCw size={16} className="spinner" /> : <Lock size={16} />} Unlock Download (5 Credits)
               </button>
             )}
-            <button className="btn btn-ghost btn-sm" onClick={handleStartOver}>Rebuild</button>
           </div>
         </div>
 
         {/* CV Preview */}
-        <div ref={previewRef} className="animate-fadeIn">
-          {template === "modern" && <CVModern cv={cv} watermark={watermarkEnabled} />}
-          {template === "professional" && <CVProfessional cv={cv} watermark={watermarkEnabled} />}
-          {template === "minimal" && <CVMinimal cv={cv} watermark={watermarkEnabled} />}
+        <div style={{ position: "relative", maxWidth: 820, margin: "0 auto" }}>
+          <div ref={previewRef} className="animate-fadeIn" style={{
+            filter: unlocked ? "none" : "blur(4px)",
+            userSelect: unlocked ? "auto" : "none",
+            pointerEvents: unlocked ? "auto" : "none",
+            opacity: unlocked ? 1 : 0.8,
+            transition: "all 0.4s ease"
+          }}>
+            {template === "modern" && <CVModern cv={cv} />}
+            {template === "professional" && <CVProfessional cv={cv} />}
+            {template === "minimal" && <CVMinimal cv={cv} />}
+          </div>
+          
+          {/* Paywall Overlay */}
+          {!unlocked && (
+            <div style={{
+              position: "absolute", inset: 0, zIndex: 10,
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+              background: "rgba(255,255,255,0.4)"
+            }}>
+              <div style={{ background: "var(--bg-card)", padding: 32, borderRadius: 16, boxShadow: "0 12px 40px rgba(0,0,0,0.1)", textAlign: "center", border: "1px solid var(--border)", maxWidth: 360 }}>
+                <Lock size={32} color="var(--accent)" style={{ margin: "0 auto 16px" }} />
+                <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>High-Quality PDF</h3>
+                <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 24 }}>
+                  Unlock your professional CV without watermarks. Ready for perfect A4 printing.
+                </p>
+                <button className="btn btn-primary w-full flex items-center justify-center gap-2" onClick={handleUnlock} disabled={unlocking}>
+                  {unlocking ? <RefreshCw size={16} className="spinner" /> : <Lock size={16} />} Unlock (Cost: 5 Credits)
+                </button>
+                <div style={{ marginTop: 12, fontSize: 13, color: "var(--text-muted)" }}>
+                  Current balance: {credits !== null ? credits : "..."} credits
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Bottom actions */}
         <div className="print-hide" style={{ maxWidth: 820, margin: "24px auto", padding: "0 16px", display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <button className="btn btn-ghost btn-lg" onClick={handlePrint} disabled={printing} id="download-btn-bottom">
-            ⬇ Free Download (with watermark)
+          <button className="btn btn-ghost flex items-center gap-2" onClick={handleStartOver}>
+             Rebuild Another
           </button>
-          {watermarkEnabled && (
-            <button className="btn btn-primary btn-lg" onClick={() => setShowPayModal(true)}>
-              ✨ Get Clean PDF — $2 once
-            </button>
-          )}
-          <button className="btn btn-ghost" onClick={handleStartOver}>↩ Build Another</button>
         </div>
       </div>
     </>

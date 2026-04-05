@@ -1277,3 +1277,17 @@ textarea.input {
   .stats-strip { grid-template-columns: 1fr; }
   .cta-card { padding: 48px 24px; }
 }
+
+/* ============================================
+   PRINT FORMATTING
+   ============================================ */
+@media print {
+  @page { size: A4; margin: 0; }
+  body {
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: black !important;
+  }
+}
+
