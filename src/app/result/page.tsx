@@ -270,6 +270,10 @@ export default function ResultPage() {
   const previewRef = useRef<HTMLDivElement>(null);
   const pendingUnlockRef = useRef(false);
 
+  const [emailForSignIn, setEmailForSignIn] = useState("");
+  const [sendingLink, setSendingLink] = useState(false);
+  const [linkSent, setLinkSent] = useState(false);
+
   const fetchCredits = useCallback(async () => {
     try {
       const res = await fetch("/api/credits");
@@ -287,32 +291,19 @@ export default function ResultPage() {
     }
   }, []);
 
+  const handleEmailSignIn = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!emailForSignIn) return;
+    setSendingLink(true);
+    sessionStorage.setItem("pendingUnlock", "true");
+    await signIn("email", { email: emailForSignIn, redirect: false });
+    setSendingLink(false);
+    setLinkSent(true);
+  };
+
   const handleUnlock = useCallback(async () => {
     if (authStatus === "unauthenticated") {
-      sessionStorage.setItem("pendingUnlock", "true");
-      
-      const width = 600;
-      const height = 700;
-      const left = window.innerWidth / 2 - width / 2;
-      const top = window.innerHeight / 2 - height / 2;
-      
-      const popup = window.open(
-        "/api/auth/signin/twitter?callbackUrl=/auth-success",
-        "TwitterAuth",
-        `width=${width},height=${height},top=${top},left=${left}`
-      );
-
-      const checkPopup = setInterval(async () => {
-        if (!popup || popup.closed) {
-          clearInterval(checkPopup);
-          const res = await fetch("/api/auth/session");
-          const sessionData = await res.json();
-          if (sessionData && Object.keys(sessionData).length > 0 && sessionData.user) {
-            window.location.reload();
-          }
-        }
-      }, 1000);
-
+      // Focus the email input instead
       return;
     }
 
@@ -466,9 +457,12 @@ export default function ResultPage() {
                 </Link>
               </div>
             ) : (
-              <button className="btn btn-primary flex items-center gap-2" onClick={handleUnlock} disabled={unlocking}>
-                {unlocking ? <RefreshCw size={16} className="spinner" /> : (authStatus === "unauthenticated" ? <Twitter size={16} /> : <Lock size={16} />)} 
-                {authStatus === "unauthenticated" ? "Sign in to Unlock" : "Unlock Download (5 Credits)"}
+              <button className="btn btn-primary flex items-center gap-2" onClick={() => {
+                if (authStatus === "authenticated") handleUnlock();
+                else document.getElementById("email-input")?.focus();
+              }} disabled={unlocking || sendingLink}>
+                {unlocking ? <RefreshCw size={16} className="spinner" /> : (authStatus === "unauthenticated" ? <Mail size={16} /> : <Lock size={16} />)} 
+                {authStatus === "unauthenticated" ? "Sign in with Email" : "Unlock Download (5 Credits)"}
               </button>
             )}
           </div>
@@ -499,18 +493,48 @@ export default function ResultPage() {
               display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
               background: "rgba(255,255,255,0.4)"
             }}>
-              <div style={{ background: "var(--bg-card)", padding: 32, borderRadius: 16, boxShadow: "0 12px 40px rgba(0,0,0,0.1)", textAlign: "center", border: "1px solid var(--border)", maxWidth: 360 }}>
+              <div style={{ background: "var(--bg-card)", padding: 32, borderRadius: 16, boxShadow: "0 12px 40px rgba(0,0,0,0.1)", textAlign: "center", border: "1px solid var(--border)", maxWidth: 360, width: "100%" }}>
                 <Lock size={32} color="var(--accent)" style={{ margin: "0 auto 16px" }} />
                 <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>High-Quality PDF</h3>
                 <p style={{ fontSize: 14, color: "var(--text-secondary)", marginBottom: 24 }}>
                   Unlock your professional CV without watermarks. Ready for perfect A4 printing.
                 </p>
-                <button className="btn btn-primary w-full flex items-center justify-center gap-2" onClick={handleUnlock} disabled={unlocking}>
-                  {unlocking ? <RefreshCw size={16} className="spinner" /> : (authStatus === "unauthenticated" ? <Twitter size={16} /> : <Lock size={16} />)}
-                  {authStatus === "unauthenticated" ? "Sign in to Unlock" : "Unlock (Cost: 5 Credits)"}
-                </button>
-                <div style={{ marginTop: 12, fontSize: 13, color: "var(--text-muted)" }}>
-                  {authStatus === "authenticated" ? `Current balance: ${credits !== null ? credits : "..."} credits` : "10 Free Credits on Signup"}
+                
+                {authStatus === "unauthenticated" ? (
+                  <div style={{ width: "100%" }}>
+                    {linkSent ? (
+                      <div style={{ padding: 16, background: "var(--accent-dim)", borderRadius: 8, border: "1px solid var(--accent)", color: "var(--accent-light)" }}>
+                        <Mail size={24} style={{ margin: "0 auto 8px" }} />
+                        <div style={{ fontWeight: 600, fontSize: 15 }}>Magic Link Sent!</div>
+                        <div style={{ fontSize: 13, marginTop: 4 }}>Check your inbox (and spam folder) and click the link to instantly authorize this page.</div>
+                      </div>
+                    ) : (
+                       <form onSubmit={handleEmailSignIn} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                         <input 
+                           id="email-input"
+                           type="email" 
+                           placeholder="Enter your email" 
+                           value={emailForSignIn} 
+                           onChange={(e) => setEmailForSignIn(e.target.value)}
+                           required
+                           style={{ width: "100%", padding: "12px 16px", borderRadius: 8, border: "1px solid var(--border)", background: "transparent", color: "var(--text-primary)", outline: "none" }}
+                         />
+                         <button type="submit" className="btn btn-primary w-full flex items-center justify-center gap-2" disabled={sendingLink}>
+                           {sendingLink ? <RefreshCw size={16} className="spinner" /> : <Mail size={16} />}
+                           Send Magic Link
+                         </button>
+                       </form>
+                    )}
+                  </div>
+                ) : (
+                  <button className="btn btn-primary w-full flex items-center justify-center gap-2" onClick={handleUnlock} disabled={unlocking}>
+                    {unlocking ? <RefreshCw size={16} className="spinner" /> : <Lock size={16} />}
+                    Unlock (Cost: 5 Credits)
+                  </button>
+                )}
+                
+                <div style={{ marginTop: 16, fontSize: 13, color: "var(--text-muted)" }}>
+                  {authStatus === "authenticated" ? `Current balance: ${credits !== null ? credits : "..."} credits` : "We'll securely email you a login link."}
                 </div>
               </div>
             </div>
