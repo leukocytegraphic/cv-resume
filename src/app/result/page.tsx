@@ -290,7 +290,29 @@ export default function ResultPage() {
   const handleUnlock = useCallback(async () => {
     if (authStatus === "unauthenticated") {
       sessionStorage.setItem("pendingUnlock", "true");
-      signIn("twitter", { callbackUrl: window.location.href });
+      
+      const width = 600;
+      const height = 700;
+      const left = window.innerWidth / 2 - width / 2;
+      const top = window.innerHeight / 2 - height / 2;
+      
+      const popup = window.open(
+        "/api/auth/signin/twitter?callbackUrl=/auth-success",
+        "TwitterAuth",
+        `width=${width},height=${height},top=${top},left=${left}`
+      );
+
+      const checkPopup = setInterval(async () => {
+        if (!popup || popup.closed) {
+          clearInterval(checkPopup);
+          const res = await fetch("/api/auth/session");
+          const sessionData = await res.json();
+          if (sessionData && Object.keys(sessionData).length > 0 && sessionData.user) {
+            window.location.reload();
+          }
+        }
+      }, 1000);
+
       return;
     }
 
