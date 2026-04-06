@@ -36,19 +36,23 @@ export const authOptions: NextAuthOptions = {
       (session as any).accessToken = token.accessToken;
       (session as any).twitterId = token.twitterId;
 
-      if (token.sub) {
-        // Find user by either token sub directly (if adapter linked it) or by account
-        let dbUser = await prisma.user.findUnique({ where: { id: token.sub } });
-        if (!dbUser) {
-          dbUser = await prisma.user.findFirst({
-            where: { accounts: { some: { providerAccountId: token.twitterId as string } } },
-          });
+      try {
+        if (token.sub) {
+          // Find user by either token sub directly (if adapter linked it) or by account
+          let dbUser = await prisma.user.findUnique({ where: { id: token.sub } });
+          if (!dbUser) {
+            dbUser = await prisma.user.findFirst({
+              where: { accounts: { some: { providerAccountId: token.twitterId as string } } },
+            });
+          }
+          
+          if (dbUser) {
+            (session.user as any).id = dbUser.id;
+            (session.user as any).credits = dbUser.credits ?? 10;
+          }
         }
-        
-        if (dbUser) {
-          (session.user as any).id = dbUser.id;
-          (session.user as any).credits = dbUser.credits;
-        }
+      } catch (e) {
+        console.error("Auth session lookup failed:", e);
       }
       return session;
     },
