@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const response = await fetch("https://api.flutterwave.com/v3/payments", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+        Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -47,10 +47,6 @@ export async function POST(req: NextRequest) {
        return NextResponse.json({ payment_url: data.data.link });
     } else {
        console.error("Flutterwave API Error:", data);
-       // Mock success for development fallback if keys are missing
-       if (!process.env.FLUTTERWAVE_SECRET_KEY) {
-         return NextResponse.json({ fallback: true, mockUrl: `${baseUrl}/api/webhooks/flutterwave?status=successful&tx_ref=${txRef}` });
-       }
        return NextResponse.json({ error: "Could not initialize payment" }, { status: 500 });
     }
 
