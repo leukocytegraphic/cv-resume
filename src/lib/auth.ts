@@ -4,8 +4,6 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
   providers: [
@@ -13,6 +11,7 @@ export const authOptions: NextAuthOptions = {
       server: "",
       from: "onboarding@resend.dev",
       sendVerificationRequest: async ({ identifier, url, provider }) => {
+        const resend = new Resend(process.env.RESEND_API_KEY || 'fallback_key');
         try {
           await resend.emails.send({
             from: provider.from as string,
