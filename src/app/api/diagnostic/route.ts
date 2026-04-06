@@ -55,10 +55,10 @@ export async function GET(req: NextRequest) {
   if (testEmail && process.env.RESEND_API_KEY) {
     try {
       const res1 = await resend.emails.send({
-        from: "onboarding@cvbuilder.creatorops.site",
+        from: "onboarding@creatorops.site",
         to: testEmail,
-        subject: "Diagnostic Test Email (Subdomain)",
-        html: "<p>If you see this, Subdomain is working!</p>"
+        subject: "Diagnostic Test Email (Custom Domain)",
+        html: "<p>If you see this, Custom Domain is working!</p>"
       });
       
       const res2 = await resend.emails.send({

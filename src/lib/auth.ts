@@ -20,8 +20,8 @@ export const authOptions: NextAuthOptions = {
         
         const resend = new Resend(apiKey);
         try {
-          // Attempt 1: Custom verified subdomain
-          const sender = "onboarding@cvbuilder.creatorops.site";
+          // Attempt 1: Custom verified domain
+          const sender = "onboarding@creatorops.site";
           
           const { data, error } = await resend.emails.send({
             from: sender,
