@@ -20,8 +20,11 @@ export const authOptions: NextAuthOptions = {
         
         const resend = new Resend(apiKey);
         try {
+          // Attempt 1: Custom verified subdomain
+          const sender = "onboarding@cvbuilder.creatorops.site";
+          
           const { data, error } = await resend.emails.send({
-            from: provider.from as string,
+            from: sender,
             to: identifier,
             subject: "Sign in to CVBuilder",
             html: `
@@ -35,8 +38,9 @@ export const authOptions: NextAuthOptions = {
           });
           
           if (error) {
-            console.error("Resend API error detail:", JSON.stringify(error));
-            throw new Error(error.message);
+            console.error("Resend primary sender failed:", JSON.stringify(error));
+            // Detailed Check: If it's a domain error, we need the user to see it.
+            throw new Error(`Resend Error: ${error.message}`);
           }
           
           console.log("Resend email sent successfully:", data?.id);

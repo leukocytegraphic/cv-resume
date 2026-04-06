@@ -54,13 +54,24 @@ export async function GET(req: NextRequest) {
   // 3. Optional Email Test
   if (testEmail && process.env.RESEND_API_KEY) {
     try {
-      const { data, error } = await resend.emails.send({
+      const res1 = await resend.emails.send({
         from: "onboarding@cvbuilder.creatorops.site",
         to: testEmail,
-        subject: "Diagnostic Test Email",
-        html: "<p>If you see this, Resend is working correctly!</p>"
+        subject: "Diagnostic Test Email (Subdomain)",
+        html: "<p>If you see this, Subdomain is working!</p>"
       });
-      results.emailTest = error ? `Error: ${error.message}` : `Success. ID: ${data?.id}`;
+      
+      const res2 = await resend.emails.send({
+        from: "onboarding@resend.dev",
+        to: testEmail,
+        subject: "Diagnostic Test Email (Resend Provider)",
+        html: "<p>If you see this, Resend's default onboarding email is working!</p>"
+      });
+
+      results.emailTest = {
+        primary: res1.error ? `Error: ${res1.error.message}` : `Success. ID: ${res1.data?.id}`,
+        fallback: res2.error ? `Error: ${res2.error.message}` : `Success. ID: ${res2.data?.id}`
+      };
     } catch (err: any) {
       results.emailTest = `Catch Error: ${err.message}`;
     }
