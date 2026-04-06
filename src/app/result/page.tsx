@@ -295,10 +295,32 @@ export default function ResultPage() {
     if (e) e.preventDefault();
     if (!emailForSignIn) return;
     setSendingLink(true);
+    
+    // Store current state so we can resume after magic link click
     sessionStorage.setItem("pendingUnlock", "true");
-    await signIn("email", { email: emailForSignIn, redirect: false });
-    setSendingLink(false);
-    setLinkSent(true);
+    
+    try {
+      console.log("Initiating sign-in for:", emailForSignIn);
+      const res = await signIn("email", { 
+        email: emailForSignIn, 
+        redirect: false,
+        callbackUrl: window.location.href 
+      });
+      
+      setSendingLink(false);
+      
+      if (res?.error) {
+        console.error("SignIn returned error:", res.error);
+        alert(`Error: ${res.error}. Please ensure your email is correct or try again.`);
+        sessionStorage.removeItem("pendingUnlock");
+      } else {
+        setLinkSent(true);
+      }
+    } catch (err: any) {
+      setSendingLink(false);
+      console.error("SignIn catch block:", err);
+      alert("An unexpected error occurred. Please refresh and try again.");
+    }
   };
 
   const handleUnlock = useCallback(async () => {

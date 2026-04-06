@@ -6,14 +6,21 @@ import { Resend } from "resend";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
   providers: [
     EmailProvider({
-      server: "",
-      from: "onboarding@resend.dev",
+      from: "onboarding@creatorops.site",
       sendVerificationRequest: async ({ identifier, url, provider }) => {
-        const resend = new Resend(process.env.RESEND_API_KEY || 'fallback_key');
+        const apiKey = process.env.RESEND_API_KEY;
+        if (!apiKey || apiKey === 'fallback_key') {
+          console.error("Missing RESEND_API_KEY");
+          throw new Error("Configuration error: Missing API Key");
+        }
+        
+        const resend = new Resend(apiKey);
         try {
-          await resend.emails.send({
+          const { data, error } = await resend.emails.send({
             from: provider.from as string,
             to: identifier,
             subject: "Sign in to CVBuilder",
@@ -26,9 +33,16 @@ export const authOptions: NextAuthOptions = {
               </div>
             `,
           });
-        } catch (error) {
-          console.error("Resend error:", error);
-          throw new Error("Failed to send verification email");
+          
+          if (error) {
+            console.error("Resend API error detail:", JSON.stringify(error));
+            throw new Error(error.message);
+          }
+          
+          console.log("Resend email sent successfully:", data?.id);
+        } catch (error: any) {
+          console.error("Resend delivery failed:", error);
+          throw new Error(error.message || "Failed to send verification email");
         }
       },
     }),
@@ -36,31 +50,36 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  pages: {
+    signIn: "/result",
+    error: "/result",
+  },
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // Allow relative URLs
       if (url.startsWith("/")) return `${baseUrl}${url}`;
-      // Allow any absolute URL on the same origin (covers /result, /dashboard, etc.)
       try {
-        if (new URL(url).origin === baseUrl) return url;
+        const u = new URL(url);
+        if (u.origin === baseUrl) return url;
       } catch {}
       return baseUrl;
     },
-    async jwt({ token }) {
-      // By default NextAuth jwt keeps token.sub which is the User ID in database
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
       return token;
     },
     async session({ session, token }) {
-      try {
-        if (token.sub) {
-          const dbUser = await prisma.user.findUnique({ where: { id: token.sub } });
+      if (token && session.user) {
+        (session.user as any).id = token.id;
+        try {
+          const dbUser = await prisma.user.findUnique({ where: { id: token.id as string } });
           if (dbUser) {
-            (session.user as any).id = dbUser.id;
             (session.user as any).credits = dbUser.credits ?? 10;
           }
+        } catch (e) {
+          console.error("Session db check failed:", e);
         }
-      } catch (e) {
-        console.error("Auth session lookup failed:", e);
       }
       return session;
     },

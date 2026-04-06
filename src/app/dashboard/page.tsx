@@ -15,13 +15,18 @@ export default function UserDashboard() {
   const [showBuyModal, setShowBuyModal] = useState(false);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    console.log("Dashboard Session status:", status);
+    if (status === "authenticated") {
+      if (session?.user) {
+        setLoading(false);
+        fetchCredits();
+      }
+    } else if (status === "unauthenticated") {
+      // Only redirect if we are sure the user isn't authenticated
+      console.warn("Unauthenticated on dashboard, redirecting to home...");
       router.replace("/");
-    } else if (status === "authenticated") {
-      setLoading(false);
-      fetchCredits();
     }
-  }, [status]);
+  }, [status, session]);
 
   const fetchCredits = async () => {
     try {
