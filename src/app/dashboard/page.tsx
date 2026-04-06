@@ -16,8 +16,9 @@ export default function UserDashboard() {
 
   useEffect(() => {
     if (status === "unauthenticated") {
-      router.push("/");
+      router.replace("/");
     } else if (status === "authenticated") {
+      setLoading(false);
       fetchCredits();
     }
   }, [status]);
@@ -36,7 +37,7 @@ export default function UserDashboard() {
     }
   };
 
-  if (status === "loading" || loading) {
+  if (status === "loading" || (status === "authenticated" && loading)) {
     return (
       <div className="loading-overlay" style={{ minHeight: "100vh" }}>
         <RefreshCw className="spinner spinner-lg" />

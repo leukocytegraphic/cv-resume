@@ -268,6 +268,7 @@ export default function ResultPage() {
   const [credits, setCredits] = useState<number | null>(null);
   const [unlocking, setUnlocking] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
+  const pendingUnlockRef = useRef(false);
 
   const fetchCredits = useCallback(async () => {
     try {
@@ -275,11 +276,14 @@ export default function ResultPage() {
       if (res.ok) {
         const data = await res.json();
         setCredits(data.credits);
+        return data.credits as number;
       } else {
         setCredits(10);
+        return 10;
       }
     } catch {
       setCredits(0);
+      return 0;
     }
   }, []);
 
@@ -320,20 +324,33 @@ export default function ResultPage() {
     if (tpl) setTemplate(tpl as CVTemplate);
     if (isUnlocked) setUnlocked(true);
 
+    const pending = sessionStorage.getItem("pendingUnlock");
+    if (pending === "true" && !isUnlocked) {
+      pendingUnlockRef.current = true;
+      sessionStorage.removeItem("pendingUnlock");
+    }
+  }, []);
+
+  // Separate effect: runs when auth is confirmed + credits loaded
+  useEffect(() => {
     if (authStatus === "authenticated") {
-      fetchCredits();
-      
-      const pending = sessionStorage.getItem("pendingUnlock");
-      if (pending === "true" && !isUnlocked) {
-        sessionStorage.removeItem("pendingUnlock");
-        handleUnlock();
-      }
+      fetchCredits().then((loadedCredits) => {
+        if (pendingUnlockRef.current) {
+          pendingUnlockRef.current = false;
+          // Now we have credits loaded — proceed with unlock
+          if (loadedCredits >= 5) {
+            handleUnlock();
+          } else {
+            setShowBuyModal(true);
+          }
+        }
+      });
 
       const params = new URLSearchParams(window.location.search);
       if (params.get("payment") === "completed") {
-         setUnlocked(true);
-         sessionStorage.setItem("cvUnlocked", "true");
-         router.replace(window.location.pathname);
+        setUnlocked(true);
+        sessionStorage.setItem("cvUnlocked", "true");
+        router.replace(window.location.pathname);
       }
     }
   }, [authStatus, router, fetchCredits, handleUnlock]);
