@@ -10,6 +10,7 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.TWITTER_CLIENT_ID!,
       clientSecret: process.env.TWITTER_CLIENT_SECRET!,
       version: "2.0",
+      allowDangerousEmailAccountLinking: true,
     }),
   ],
   session: {
@@ -25,10 +26,10 @@ export const authOptions: NextAuthOptions = {
       } catch {}
       return baseUrl;
     },
-    async jwt({ token, account, profile }) {
+    async jwt({ token, account }) {
       if (account) {
         token.accessToken = account.access_token;
-        token.twitterId = profile?.sub;
+        token.twitterId = account.providerAccountId;
       }
       return token;
     },
