@@ -10,7 +10,7 @@ export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === "development",
   providers: [
     EmailProvider({
-      from: "onboarding@creatorops.site",
+      from: "onboarding@cvbuilder.creatorops.site",
       sendVerificationRequest: async ({ identifier, url, provider }) => {
         const apiKey = process.env.RESEND_API_KEY;
         if (!apiKey || apiKey === 'fallback_key') {
