@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
   if (testEmail && process.env.RESEND_API_KEY) {
     try {
       const { data, error } = await resend.emails.send({
-        from: "onboarding@creatorops.site",
+        from: "onboarding@cvbuilder.creatorops.site",
         to: testEmail,
         subject: "Diagnostic Test Email",
         html: "<p>If you see this, Resend is working correctly!</p>"
