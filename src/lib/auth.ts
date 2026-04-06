@@ -54,7 +54,29 @@ export const authOptions: NextAuthOptions = {
     signIn: "/result",
     error: "/result",
   },
+  events: {
+    async signIn(message) {
+      console.log("NextAuth SignIn event:", JSON.stringify(message));
+    },
+    async createUser(message) {
+      console.log("NextAuth CreateUser event:", JSON.stringify(message));
+    },
+    async linkAccount(message) {
+      console.log("NextAuth LinkAccount event:", JSON.stringify(message));
+    },
+    async session(message) {
+      // console.log("NextAuth Session event:", JSON.stringify(message));
+    },
+  },
   callbacks: {
+    async signIn({ user, account, profile, email, credentials }) {
+      console.log("NextAuth signIn callback triggered for:", user?.email);
+      if (account?.provider === "email") {
+        console.log("Email sign-in check for:", user?.email);
+        return true;
+      }
+      return true;
+    },
     async redirect({ url, baseUrl }) {
       if (url.startsWith("/")) return `${baseUrl}${url}`;
       try {
@@ -63,7 +85,7 @@ export const authOptions: NextAuthOptions = {
       } catch {}
       return baseUrl;
     },
-    async jwt({ token, user }) {
+    async jwt({ token, user, account, profile, isNewUser }) {
       if (user) {
         token.id = user.id;
       }
